@@ -8,5 +8,7 @@ public class AppSettings
 
     public bool ExecuteStartup { get; init; }
 
+    public string StorageFolder { get; init; }
+
     public string[] SupportedCultures { get; init; }
 }

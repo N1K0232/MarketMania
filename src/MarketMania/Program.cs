@@ -13,6 +13,7 @@ using MarketMania.BusinessLayer.Startup;
 using MarketMania.DataAccessLayer;
 using MarketMania.Extensions;
 using MarketMania.Requirements;
+using MarketMania.StorageProviders.Extensions;
 using MarketMania.Swagger;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -25,6 +26,7 @@ using OperationResults.AspNetCore.Http;
 using SimpleAuthentication;
 using TinyHelpers.AspNetCore.Extensions;
 using TinyHelpers.AspNetCore.OpenApi;
+using TinyHelpers.Extensions;
 using ResultErrorResponseFormat = OperationResults.AspNetCore.Http.ErrorResponseFormat;
 using ValidationErrorResponseFormat = MinimalHelpers.Validation.ErrorResponseFormat;
 
@@ -147,6 +149,23 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole(RoleNames.Administrator, RoleNames.PowerUser);
     });
 });
+
+var azureStorageConnectionString = builder.Configuration.GetConnectionString("AzureStorageConnection");
+if (azureStorageConnectionString.HasValue())
+{
+    builder.Services.AddAzureStorage(options =>
+    {
+        options.ConnectionString = azureStorageConnectionString;
+        options.ContainerName = settings.StorageFolder;
+    });
+}
+else
+{
+    builder.Services.AddFileSystemStorage(options =>
+    {
+        options.StorageFolder = settings.StorageFolder;
+    });
+}
 
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IMeService, MeService>();
