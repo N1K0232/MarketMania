@@ -6,5 +6,7 @@ public class AppSettings
 
     public string ApplicationDescription { get; init; }
 
+    public bool ExecuteStartup { get; init; }
+
     public string[] SupportedCultures { get; init; }
 }

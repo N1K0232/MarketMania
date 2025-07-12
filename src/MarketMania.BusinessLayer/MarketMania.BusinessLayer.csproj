@@ -6,6 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="15.0.1" />
+    <PackageReference Include="MailKit" Version="4.13.0" />
+    <PackageReference Include="OperationResultTools" Version="1.0.30" />
     <PackageReference Include="TinyHelpers" Version="3.3.4" />
   </ItemGroup>
 

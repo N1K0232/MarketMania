@@ -1,6 +1,5 @@
 ﻿namespace MarketMania.DataAccessLayer;
 
-public class Class1
+public interface IApplicationDbContext
 {
-
 }
