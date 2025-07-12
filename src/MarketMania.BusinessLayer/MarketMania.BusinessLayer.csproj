@@ -3,7 +3,16 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TinyHelpers" Version="3.3.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MarketMania.DataAccessLayer\MarketMania.DataAccessLayer.csproj" />
+    <ProjectReference Include="..\MarketMania.Shared\MarketMania.Shared.csproj" />
+    <ProjectReference Include="..\MarketMania.StorageProviders\MarketMania.StorageProviders.csproj" />
+  </ItemGroup>
 
 </Project>
