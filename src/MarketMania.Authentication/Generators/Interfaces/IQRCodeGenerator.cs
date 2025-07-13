@@ -1,5 +1,5 @@
 ﻿
-namespace MarketMania.Authentication.Generators;
+namespace MarketMania.Authentication.Generators.Interfaces;
 
 public interface IQRCodeGenerator
 {

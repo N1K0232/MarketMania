@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using MarketMania.Authentication.Generators.Interfaces;
+using Microsoft.AspNetCore.Hosting;
 using QRCoder;
 
 namespace MarketMania.Authentication.Generators;
