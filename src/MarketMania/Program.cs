@@ -12,6 +12,7 @@ using MarketMania.BusinessLayer.Mapping;
 using MarketMania.BusinessLayer.Services;
 using MarketMania.BusinessLayer.Settings;
 using MarketMania.BusinessLayer.Startup;
+using MarketMania.BusinessLayer.Validations;
 using MarketMania.Contracts;
 using MarketMania.DataAccessLayer;
 using MarketMania.Extensions;
@@ -71,6 +72,8 @@ builder.Services.AddAutoMapper(options =>
     options.AddProfiles(profiles);
 });
 
+builder.Services.AddValidatorsFromAssemblyContaining<SaveCategoryRequestValidator>();
+
 builder.Services.AddOperationResult(options =>
 {
     options.ErrorResponseFormat = ResultErrorResponseFormat.List;
@@ -118,11 +121,8 @@ builder.Services.AddSingleton<IQRCodeGenerator, QRCodeHandlerGenerator>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddSingleton<IEmailClient, EmailClient>();
 
-builder.Services.AddDbContext<IApplicationDbContext, ApplicationDbContext>(options =>
-{
-    var connectionString = builder.Configuration.GetConnectionString("SqlConnection");
-    options.UseAzureSql(connectionString);
-});
+builder.Services.AddSqlServer<ApplicationDbContext>(builder.Configuration.GetConnectionString("SqlConnection"));
+builder.Services.AddScoped<IApplicationDbContext>(services => services.GetRequiredService<ApplicationDbContext>());
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 {
@@ -206,10 +206,6 @@ var app = builder.Build();
 app.Environment.ApplicationName = settings.ApplicationName;
 
 app.UseHttpsRedirection();
-app.UseRequestLocalization();
-
-app.UseRouting();
-app.UseWebOptimizer();
 
 app.UseWhen(context => context.IsWebRequest(), builder =>
 {
@@ -222,14 +218,14 @@ app.UseWhen(context => context.IsWebRequest(), builder =>
     builder.UseStatusCodePagesWithReExecute("/Errors/{0}");
 });
 
-app.UseStaticFiles();
-app.UseDefaultFiles();
-
 app.UseWhen(context => context.IsApiRequest(), builder =>
 {
     builder.UseExceptionHandler();
     builder.UseStatusCodePages();
 });
+
+app.UseWebOptimizer();
+app.UseStaticFiles();
 
 if (swagger.IsEnabled)
 {
@@ -241,6 +237,9 @@ if (swagger.IsEnabled)
         options.InjectStylesheet("/css/swagger.css");
     });
 }
+
+app.UseRouting();
+app.UseRequestLocalization();
 
 app.UseAuthentication();
 app.UseAuthorization();
