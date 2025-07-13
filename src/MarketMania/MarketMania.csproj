@@ -16,6 +16,7 @@
     <PackageReference Include="MinimalHelpers.OpenApi" Version="2.1.10" />
     <PackageReference Include="MinimalHelpers.Routing" Version="2.1.2" />
     <PackageReference Include="OperationResultTools.AspNetCore.Http" Version="1.0.28" />
+    <PackageReference Include="Scrutor" Version="6.1.0" />
     <PackageReference Include="SimpleAuthenticationTools" Version="3.0.13" />
     <PackageReference Include="SimpleAuthenticationTools.Swashbuckle" Version="3.0.22" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />

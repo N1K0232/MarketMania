@@ -6,7 +6,11 @@ namespace MarketMania.BusinessLayer.Services.Interfaces;
 
 public interface IIdentityService
 {
+    Task<Result<StreamFileContent>> GetQRCodeAsync(string token, CancellationToken cancellationToken);
+
     Task<Result<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken);
 
     Task<Result> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken);
+
+    Task<Result<AuthResponse>> ValidateTwoFactorAsync(TwoFactorValidationRequest request, CancellationToken cancellationToken);
 }

@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using MarketMania.Authentication.Entities;
+using MarketMania.Authentication.Generators.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using SimpleAuthentication.JwtBearer;
 

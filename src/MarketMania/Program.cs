@@ -1,13 +1,14 @@
 using AutoMapper;
+using FluentValidation;
 using MarketMania.Authentication;
 using MarketMania.Authentication.DataProtection;
 using MarketMania.Authentication.Entities;
 using MarketMania.Authentication.Generators;
+using MarketMania.Authentication.Generators.Interfaces;
 using MarketMania.BusinessLayer.Clients;
 using MarketMania.BusinessLayer.Clients.Interfaces;
 using MarketMania.BusinessLayer.Mapping;
 using MarketMania.BusinessLayer.Services;
-using MarketMania.BusinessLayer.Services.Interfaces;
 using MarketMania.BusinessLayer.Settings;
 using MarketMania.BusinessLayer.Startup;
 using MarketMania.DataAccessLayer;
@@ -20,6 +21,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using MinimalHelpers.Routing;
 using MinimalHelpers.Validation;
 using OperationResults.AspNetCore.Http;
@@ -98,12 +100,16 @@ builder.Services.AddScoped(services =>
 
 builder.Services.AddScoped<IDataProtectionService, DataProtectionService>();
 builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
+builder.Services.AddSingleton<IQRCodeGenerator, QRCodeHandlerGenerator>();
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddSingleton<IEmailClient, EmailClient>();
 
-builder.Services.AddAzureSql<ApplicationDbContext>(builder.Configuration.GetConnectionString("SqlConnection"));
-builder.Services.AddScoped<IApplicationDbContext>(services => services.GetRequiredService<ApplicationDbContext>());
+builder.Services.AddDbContext<IApplicationDbContext, ApplicationDbContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("SqlConnection");
+    options.UseAzureSql(connectionString);
+});
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 {
@@ -148,6 +154,12 @@ builder.Services.AddAuthorization(options =>
         policy.Requirements.Add(new UserActiveRequirement());
         policy.RequireRole(RoleNames.Administrator, RoleNames.PowerUser);
     });
+
+    options.AddPolicy("UserActive", policy =>
+    {
+        policy.Requirements.Add(new UserActiveRequirement());
+        policy.RequireRole(RoleNames.User);
+    });
 });
 
 var azureStorageConnectionString = builder.Configuration.GetConnectionString("AzureStorageConnection");
@@ -167,8 +179,10 @@ else
     });
 }
 
-builder.Services.AddScoped<IIdentityService, IdentityService>();
-builder.Services.AddScoped<IMeService, MeService>();
+builder.Services.Scan(scan => scan.FromAssemblyOf<IdentityService>()
+    .AddClasses(classes => classes.InNamespaceOf<IdentityService>())
+    .AsImplementedInterfaces()
+    .WithScopedLifetime());
 
 if (settings.ExecuteStartup)
 {

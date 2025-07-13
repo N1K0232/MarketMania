@@ -1,6 +1,6 @@
 ﻿using MarketMania.Authentication.Entities;
 
-namespace MarketMania.Authentication.Generators;
+namespace MarketMania.Authentication.Generators.Interfaces;
 
 public interface ITokenGenerator
 {
