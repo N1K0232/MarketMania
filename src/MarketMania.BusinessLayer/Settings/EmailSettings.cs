@@ -2,15 +2,19 @@
 
 public class EmailSettings
 {
-    public string Host { get; set; }
+    public string Host { get; init; }
 
-    public int Port { get; set; }
+    public int Port { get; init; }
 
-    public bool UseSsl { get; set; }
+    public bool UseSsl { get; init; }
 
-    public string UserName { get; set; }
+    public string SenderName { get; init; }
 
-    public string Password { get; set; }
+    public string SenderEmail { get; init; }
 
-    public bool IgnoreServerCertificateErrors { get; set; }
+    public string UserName { get; init; }
+
+    public string Password { get; init; }
+
+    public bool IgnoreServerCertificateErrors { get; init; }
 }

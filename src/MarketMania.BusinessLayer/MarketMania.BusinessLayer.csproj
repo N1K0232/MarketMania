@@ -15,9 +15,25 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MarketMania.Contracts\MarketMania.Contracts.csproj" />
     <ProjectReference Include="..\MarketMania.DataAccessLayer\MarketMania.DataAccessLayer.csproj" />
     <ProjectReference Include="..\MarketMania.Shared\MarketMania.Shared.csproj" />
     <ProjectReference Include="..\MarketMania.StorageProviders\MarketMania.StorageProviders.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources\Messages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Messages.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\Messages.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Messages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using AutoMapper;
 using FluentValidation;
 using MarketMania.Authentication;
@@ -11,9 +12,11 @@ using MarketMania.BusinessLayer.Mapping;
 using MarketMania.BusinessLayer.Services;
 using MarketMania.BusinessLayer.Settings;
 using MarketMania.BusinessLayer.Startup;
+using MarketMania.Contracts;
 using MarketMania.DataAccessLayer;
 using MarketMania.Extensions;
 using MarketMania.Requirements;
+using MarketMania.Services;
 using MarketMania.StorageProviders.Extensions;
 using MarketMania.Swagger;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -29,6 +32,7 @@ using SimpleAuthentication;
 using TinyHelpers.AspNetCore.Extensions;
 using TinyHelpers.AspNetCore.OpenApi;
 using TinyHelpers.Extensions;
+using TinyHelpers.Json.Serialization;
 using ResultErrorResponseFormat = OperationResults.AspNetCore.Http.ErrorResponseFormat;
 using ValidationErrorResponseFormat = MinimalHelpers.Validation.ErrorResponseFormat;
 
@@ -46,6 +50,13 @@ builder.Services.AddWebOptimizer(minifyCss: true, minifyJavaScript: builder.Envi
 
 builder.Services.AddDefaultExceptionHandler();
 builder.Services.AddDefaultProblemDetails();
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
+    options.SerializerOptions.Converters.Add(new UtcDateTimeConverter());
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 builder.Services.AddAutoMapper(options =>
 {
@@ -100,6 +111,8 @@ builder.Services.AddScoped(services =>
 
 builder.Services.AddScoped<IDataProtectionService, DataProtectionService>();
 builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
+
+builder.Services.AddSingleton<IPageService, PageService>();
 builder.Services.AddSingleton<IQRCodeGenerator, QRCodeHandlerGenerator>();
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));

@@ -17,6 +17,9 @@ public class EmailClient(IOptions<EmailSettings> emailSettingsOptions) : IEmailC
 
     public async Task<SendEmailResponse> SendEmailAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default)
     {
+        emailMessage.SenderEmail = emailSettings.SenderEmail;
+        emailMessage.SenderName = emailSettings.SenderName;
+
         var message = CreateMessage(emailMessage);
 
         if (emailSettings.IgnoreServerCertificateErrors)

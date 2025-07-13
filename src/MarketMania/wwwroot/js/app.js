@@ -53,6 +53,15 @@ async function copyToClipboard(element, text) {
     new bootstrap.Tooltip(element);
 }
 
-function redirectoToPage(page) {
-    window.location.href = page;
+function setAuthCookie(name, value, isPersistent) {
+    let cookie = `${name}=${value}; path=/; Secure; SameSite=Strict`;
+
+    if (isPersistent) {
+        const expirationDays = 7;
+        const date = new Date();
+        date.setTime(date.getTime() + expirationDays * 24 * 60 * 60 * 1000);
+        cookie += `; Expires=${date.toUTCString()}`;
+    }
+
+    document.cookie = cookie;
 }

@@ -10,7 +10,11 @@ public interface IIdentityService
 
     Task<Result<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken);
 
+    Task<Result> LogoutAsync(CancellationToken cancellationToken);
+
     Task<Result> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken);
 
     Task<Result<AuthResponse>> ValidateTwoFactorAsync(TwoFactorValidationRequest request, CancellationToken cancellationToken);
+
+    Task<Result> VerifyEmailAsync(string token, string secret, CancellationToken cancellationToken);
 }
