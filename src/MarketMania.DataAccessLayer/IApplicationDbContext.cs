@@ -4,9 +4,9 @@ namespace MarketMania.DataAccessLayer;
 
 public interface IApplicationDbContext
 {
-    Task DeleteAsync<T>(T entity) where T : BaseEntity;
+    Task DeleteAsync<T>(T entity, CancellationToken cancellationToken) where T : BaseEntity;
 
-    Task DeleteAsync<T>(IEnumerable<T> entities) where T : BaseEntity;
+    Task DeleteAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken) where T : BaseEntity;
 
     ValueTask<T> GetAsync<T>(Guid id, CancellationToken cancellationToken) where T : BaseEntity;
 

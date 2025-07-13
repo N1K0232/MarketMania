@@ -8,13 +8,13 @@ namespace MarketMania.DataAccessLayer;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : AuthenticationDbContext(options), IApplicationDbContext
 {
-    public Task DeleteAsync<T>(T entity) where T : BaseEntity
+    public Task DeleteAsync<T>(T entity, CancellationToken cancellationToken) where T : BaseEntity
     {
         Set<T>().Remove(entity);
         return Task.CompletedTask;
     }
 
-    public Task DeleteAsync<T>(IEnumerable<T> entities) where T : BaseEntity
+    public Task DeleteAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken) where T : BaseEntity
     {
         Set<T>().RemoveRange(entities);
         return Task.CompletedTask;
