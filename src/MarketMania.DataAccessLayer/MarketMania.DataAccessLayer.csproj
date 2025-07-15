@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MarketMania.Authentication\MarketMania.Authentication.csproj" />
-    <ProjectReference Include="..\MarketMania.Database\MarketMania.Database.sqlproj" />
   </ItemGroup>
 
 </Project>
