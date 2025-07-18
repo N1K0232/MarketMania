@@ -40,6 +40,14 @@ public class AzureStorageProvider(AzureStorageSettings settings) : IStorageProvi
         await blobContainerClient.DeleteBlobIfExistsAsync(path, cancellationToken: cancellationToken);
     }
 
+    public async Task<bool> ExistsAsync(string path, CancellationToken cancellationToken)
+    {
+        var blobClient = await GetBlobClientAsync(path, cancellationToken: cancellationToken);
+        var exists = await blobClient.ExistsAsync(cancellationToken);
+
+        return exists;
+    }
+
     private async Task<BlobClient> GetBlobClientAsync(string path, bool createIfNotExists = false, CancellationToken cancellationToken = default)
     {
         var blobContainerClient = blobServiceClient.GetBlobContainerClient(settings.ContainerName);

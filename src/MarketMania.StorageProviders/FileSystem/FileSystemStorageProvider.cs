@@ -40,4 +40,12 @@ public class FileSystemStorageProvider(FileSystemStorageSettings settings) : ISt
 
         return Task.CompletedTask;
     }
+
+    public Task<bool> ExistsAsync(string path, CancellationToken cancellationToken)
+    {
+        var fullPath = Path.Combine(settings.StorageFolder, path);
+        var exists = File.Exists(fullPath);
+
+        return Task.FromResult(exists);
+    }
 }

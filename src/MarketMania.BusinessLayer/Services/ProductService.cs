@@ -1,6 +1,7 @@
 ﻿using System.Linq.Dynamic.Core;
 using System.Linq.Dynamic.Core.Exceptions;
 using AutoMapper;
+using MarketMania.BusinessLayer.Generators.Interfaces;
 using MarketMania.DataAccessLayer;
 using MarketMania.Shared.Models;
 using MarketMania.Shared.Models.Requests;
@@ -11,7 +12,7 @@ using Entities = MarketMania.DataAccessLayer.Entities;
 
 namespace MarketMania.BusinessLayer.Services;
 
-public class ProductService(IApplicationDbContext applicationDbContext, IMapper mapper) : IProductService
+public class ProductService(IApplicationDbContext applicationDbContext, ISerialNumberGenerator serialNumberGenerator, IBarcodeGenerator barcodeGenerator, IMapper mapper) : IProductService
 {
     public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
@@ -44,32 +45,32 @@ public class ProductService(IApplicationDbContext applicationDbContext, IMapper 
         return product;
     }
 
-    public async Task<Result<PaginatedList<Product>>> GetListAsync(string name, string brand, string category, int pageIndex, int itemsPerPage, string orderBy, CancellationToken cancellationToken)
+    public async Task<Result<PaginatedList<Product>>> GetListAsync(SearchProductRequest request, CancellationToken cancellationToken)
     {
         var query = applicationDbContext.GetData<Entities.Product>()
             .Include(p => p.Brand)
             .Include(p => p.Category)
             .Include(p => p.Supplier)
-            .WhereIf(name.HasValue(), p => p.Name.Contains(name))
-            .WhereIf(brand.HasValue(), p => p.Brand.Name.Contains(brand))
-            .WhereIf(category.HasValue(), p => p.Category.Name.Contains(category))
+            .WhereIf(request.Name.HasValue(), p => p.Name.Contains(request.Name))
+            .WhereIf(request.Brand.HasValue(), p => p.Brand.Name.Contains(request.Brand))
+            .WhereIf(request.Category.HasValue(), p => p.Category.Name.Contains(request.Category))
             .Where(p => p.IsPublished);
 
         var totalCount = await query.CountAsync(cancellationToken);
 
         try
         {
-            query = query.OrderBy(orderBy);
+            query = query.OrderBy(request.OrderBy);
         }
         catch (ParseException ex)
         {
             return Result.Fail(FailureReasons.ClientError, "Unable to order", ex.Message);
         }
 
-        var dbProducts = await query.Skip(pageIndex * itemsPerPage).Take(itemsPerPage + 1).ToListAsync(cancellationToken);
-        var products = mapper.Map<IEnumerable<Product>>(dbProducts).Take(itemsPerPage);
+        var dbProducts = await query.Skip(request.PageIndex * request.ItemsPerPage).Take(request.ItemsPerPage + 1).ToListAsync(cancellationToken);
+        var products = mapper.Map<IEnumerable<Product>>(dbProducts).Take(request.ItemsPerPage);
 
-        var list = new PaginatedList<Product>(products, totalCount, dbProducts.Count > itemsPerPage);
+        var list = new PaginatedList<Product>(products, totalCount, dbProducts.Count > request.ItemsPerPage);
         return list;
     }
 
@@ -122,33 +123,11 @@ public class ProductService(IApplicationDbContext applicationDbContext, IMapper 
 
         do
         {
-            barcode = GenerateBarcode();
+            barcode = await barcodeGenerator.GenerateAsync(cancellationToken);
             exists = await applicationDbContext.GetData<Entities.Product>().AnyAsync(p => p.Barcode == barcode, cancellationToken);
         } while (exists);
 
         return barcode;
-
-        static string GenerateBarcode()
-        {
-            var random = new Random();
-            var code = string.Empty;
-
-            for (var i = 0; i < 12; i++)
-            {
-                code += random.Next(0, 10);
-            }
-
-            var sum = 0;
-
-            for (var i = 0; i < 12; i++)
-            {
-                var digit = int.Parse(code[i].ToString());
-                sum += (i % 2 == 0) ? digit : digit * 3;
-            }
-
-            var checksum = (10 - (sum % 10)) % 10;
-            return code + checksum.ToString();
-        }
     }
 
     private async Task<string> GenerateSerialNumberAsync(CancellationToken cancellationToken)
@@ -158,14 +137,11 @@ public class ProductService(IApplicationDbContext applicationDbContext, IMapper 
 
         do
         {
-            serialNumber = GenerateSerialNumber();
+            serialNumber = await serialNumberGenerator.GenerateAsync(cancellationToken);
             exists = await applicationDbContext.GetData<Entities.Product>().AnyAsync(p => p.SerialNumber == serialNumber, cancellationToken);
         }
         while (exists);
 
         return serialNumber;
-
-        static string GenerateSerialNumber()
-            => $"SN-{Guid.CreateVersion7().ToString("N")[..12].ToUpper()}";
     }
 }

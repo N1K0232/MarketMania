@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using AutoMapper;
 using FluentValidation;
 using MarketMania.Authentication;
 using MarketMania.Authentication.DataProtection;
@@ -8,7 +7,9 @@ using MarketMania.Authentication.Generators;
 using MarketMania.Authentication.Generators.Interfaces;
 using MarketMania.BusinessLayer.Clients;
 using MarketMania.BusinessLayer.Clients.Interfaces;
-using MarketMania.BusinessLayer.Mapping;
+using MarketMania.BusinessLayer.Extensions;
+using MarketMania.BusinessLayer.Generators;
+using MarketMania.BusinessLayer.Generators.Interfaces;
 using MarketMania.BusinessLayer.Services;
 using MarketMania.BusinessLayer.Settings;
 using MarketMania.BusinessLayer.Startup;
@@ -52,6 +53,8 @@ builder.Services.AddWebOptimizer(minifyCss: true, minifyJavaScript: builder.Envi
 builder.Services.AddDefaultExceptionHandler();
 builder.Services.AddDefaultProblemDetails();
 
+builder.Services.AddSingleton(TimeProvider.System);
+
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
@@ -59,19 +62,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
-builder.Services.AddAutoMapper(options =>
-{
-    var profiles = new List<Profile>();
-    var profileTypes = typeof(UserMapperProfile).Assembly.GetTypes().Where(t => typeof(Profile).IsAssignableFrom(t));
-
-    foreach (var profileType in profileTypes)
-    {
-        profiles.Add((Profile)Activator.CreateInstance(profileType));
-    }
-
-    options.AddProfiles(profiles);
-});
-
+builder.Services.AddAutoMapper();
 builder.Services.AddValidatorsFromAssemblyContaining<SaveCategoryRequestValidator>();
 
 builder.Services.AddOperationResult(options =>
@@ -98,21 +89,15 @@ builder.Services.AddDataProtection()
     .SetApplicationName(settings.ApplicationName)
     .PersistKeysToDbContext<ApplicationDbContext>();
 
-builder.Services.AddScoped(services =>
+builder.Services.AddSingleton(services =>
 {
     var dataProtectionProvider = services.GetRequiredService<IDataProtectionProvider>();
     var dataProtector = dataProtectionProvider.CreateProtector(settings.ApplicationName);
 
-    return dataProtector;
-});
-
-builder.Services.AddScoped(services =>
-{
-    var dataProtector = services.GetRequiredService<IDataProtector>();
     return dataProtector.ToTimeLimitedDataProtector();
 });
 
-builder.Services.AddScoped<IDataProtectionService, DataProtectionService>();
+builder.Services.AddSingleton<IDataProtectionService, DataProtectionService>();
 builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
 
 builder.Services.AddSingleton<IPageService, PageService>();
@@ -121,7 +106,7 @@ builder.Services.AddSingleton<IQRCodeGenerator, QRCodeHandlerGenerator>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddSingleton<IEmailClient, EmailClient>();
 
-builder.Services.AddSqlServer<ApplicationDbContext>(builder.Configuration.GetConnectionString("SqlConnection"));
+builder.Services.AddAzureSql<ApplicationDbContext>(builder.Configuration.GetConnectionString("SqlConnection"));
 builder.Services.AddScoped<IApplicationDbContext>(services => services.GetRequiredService<ApplicationDbContext>());
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
@@ -201,6 +186,9 @@ if (settings.ExecuteStartup)
 {
     builder.Services.AddHostedService<IdentityStartupService>();
 }
+
+builder.Services.AddSingleton<IBarcodeGenerator, BarcodeGenerator>();
+builder.Services.AddSingleton<ISerialNumberGenerator, SerialNumberGenerator>();
 
 var app = builder.Build();
 app.Environment.ApplicationName = settings.ApplicationName;
