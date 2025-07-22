@@ -30,6 +30,8 @@ public class Product : BaseEntity
 
     public decimal TotalPrice { get; set; }
 
+    public int RatingsCount { get; set; }
+
     public double? RatingsAverage { get; set; }
 
     public string ImageUrl { get; set; }
@@ -83,4 +85,6 @@ public class Product : BaseEntity
     public virtual Promotion Promotion { get; set; }
 
     public virtual ICollection<Image> Images { get; set; }
+
+    public virtual ICollection<Rating> Ratings { get; set; }
 }

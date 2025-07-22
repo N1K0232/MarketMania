@@ -36,7 +36,6 @@ public class SaveProductRequestValidator : AbstractValidator<SaveProductRequest>
             .MustAsync(PromotionMustExistsAsync)
             .WithMessage("Promotion doesn't exists");
 
-
         RuleFor(p => p.Name)
             .NotEmpty()
             .WithMessage("Name is required")
@@ -140,6 +139,11 @@ public class SaveProductRequestValidator : AbstractValidator<SaveProductRequest>
 
     private async Task<bool> PromotionMustExistsAsync(Guid? promotionId, CancellationToken cancellationToken)
     {
+        if (promotionId is null)
+        {
+            return true;
+        }
+
         var query = applicationDbContext.GetData<Promotion>();
         return await query.AnyAsync(p => p.Id == promotionId, cancellationToken);
     }

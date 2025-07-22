@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System.Data;
+using System.Data.Common;
+using System.Reflection;
 using EntityFramework.Exceptions.SqlServer;
 using MarketMania.Authentication;
 using MarketMania.DataAccessLayer.Entities.Common;
@@ -57,17 +59,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         await SaveChangesAsync(true, cancellationToken);
     }
 
-    public async Task ExecuteTransactionAsync(Func<Task> action, CancellationToken cancellationToken)
+    public async Task<DbTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
     {
-        var strategy = Database.CreateExecutionStrategy();
-        await strategy.ExecuteAsync(async () =>
-        {
-            using var transaction = await Database.BeginTransactionAsync(cancellationToken);
-            await action.Invoke();
-
-            await transaction.CommitAsync(cancellationToken);
-            await transaction.DisposeAsync();
-        });
+        var transaction = await Database.GetDbConnection().BeginTransactionAsync(cancellationToken);
+        return transaction;
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

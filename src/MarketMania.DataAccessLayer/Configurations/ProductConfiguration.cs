@@ -34,25 +34,25 @@ internal class ProductConfiguration : BaseEntityConfiguration<Product>
             .WithMany(b => b.Products)
             .HasForeignKey(p => p.BrandId)
             .HasConstraintName("FK_Products_Brands")
-            .OnDelete(DeleteBehavior.ClientCascade);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(p => p.Category)
             .WithMany(c => c.Products)
             .HasForeignKey(p => p.CategoryId)
             .HasConstraintName("FK_Products_Categories")
-            .OnDelete(DeleteBehavior.ClientCascade);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(p => p.Supplier)
             .WithMany(s => s.Products)
             .HasForeignKey(p => p.SupplierId)
             .HasConstraintName("FK_Products_Suppliers")
-            .OnDelete(DeleteBehavior.ClientCascade);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(p => p.Promotion)
             .WithMany(p => p.Products)
             .HasForeignKey(p => p.PromotionId)
             .HasConstraintName("FK_Products_Promotions")
-            .OnDelete(DeleteBehavior.ClientCascade);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(p => p.Name)
             .IsClustered(false)

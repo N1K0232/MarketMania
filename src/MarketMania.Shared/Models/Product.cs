@@ -28,6 +28,8 @@ public class Product
 
     public decimal TotalPrice { get; set; }
 
+    public int RatingsCount { get; set; }
+
     public double? RatingsAverage { get; set; }
 
     public string ImageUrl { get; set; }

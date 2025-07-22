@@ -52,7 +52,7 @@ public class CategoryService(IApplicationDbContext applicationDbContext, IMapper
     public async Task<Result<Category>> InsertAsync(SaveCategoryRequest request, CancellationToken cancellationToken)
     {
         var exists = await applicationDbContext.GetData<Entities.Category>().AnyAsync(c => c.Name == request.Name && c.Description == request.Description, cancellationToken);
-        if (!exists)
+        if (exists)
         {
             return Result.Fail(FailureReasons.Conflict, "Category already exists", $"The category {request.Name} already exists");
         }
@@ -61,7 +61,7 @@ public class CategoryService(IApplicationDbContext applicationDbContext, IMapper
         await applicationDbContext.InsertAsync(dbCategory, cancellationToken);
         await applicationDbContext.SaveAsync(cancellationToken);
 
-        var savedCategory = mapper.Map<Category>(request);
+        var savedCategory = mapper.Map<Category>(dbCategory);
         return savedCategory;
     }
 

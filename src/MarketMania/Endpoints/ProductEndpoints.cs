@@ -93,6 +93,36 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
             .Produces(StatusCodes.Status409Conflict)
             .WithName("UploadProductImage")
             .WithOpenApi();
+
+        productsApiGroup.MapDelete("{productId:guid}/ratings/{ratingId:guid}", DeleteRatingAsync)
+            .AllowAnonymous()
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("DeleteProductRating")
+            .WithOpenApi();
+
+        productsApiGroup.MapGet("{productId:guid}/ratings/{ratingId:guid}", GetRatingAsync)
+            .AllowAnonymous()
+            .Produces<Rating>()
+            .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("GetProductRating")
+            .WithOpenApi();
+
+        productsApiGroup.MapGet("{productId:guid}/ratings", GetRatingsAsync)
+            .AllowAnonymous()
+            .Produces<IEnumerable<Rating>>()
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("GetProductRatings")
+            .WithOpenApi();
+
+        productsApiGroup.MapPost("{productId:guid}/ratings", PublishRatingAsync)
+            .RequireAuthorization()
+            .WithValidation<NewRatingRequest>()
+            .Produces<Rating>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("PublishProductRating")
+            .WithOpenApi();
     }
 
     public static async Task<IResult> DeleteAsync(Guid id, IProductService productService, HttpContext httpContext)
@@ -172,6 +202,38 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         var result = await imageService.UploadAsync(productId, file.OpenReadStream(), file.FileName, httpContext.RequestAborted);
 
         var response = httpContext.CreateResponse(result, "GetProductImage", new { id = result.Content?.Id, productId });
+        return response;
+    }
+
+    public static async Task<IResult> DeleteRatingAsync(Guid productId, Guid ratingId, IRatingService ratingService, HttpContext httpContext)
+    {
+        var result = await ratingService.DeleteAsync(productId, ratingId, httpContext.RequestAborted);
+
+        var response = httpContext.CreateResponse(result);
+        return response;
+    }
+
+    public static async Task<IResult> GetRatingAsync(Guid productId, Guid ratingId, IRatingService ratingService, HttpContext httpContext)
+    {
+        var result = await ratingService.GetAsync(productId, ratingId, httpContext.RequestAborted);
+
+        var response = httpContext.CreateResponse(result);
+        return response;
+    }
+
+    public static async Task<IResult> GetRatingsAsync(Guid productId, IRatingService ratingService, HttpContext httpContext)
+    {
+        var result = await ratingService.GetListAsync(productId, httpContext.RequestAborted);
+
+        var response = httpContext.CreateResponse(result);
+        return response;
+    }
+
+    public static async Task<IResult> PublishRatingAsync(Guid productId, NewRatingRequest request, IRatingService ratingService, HttpContext httpContext)
+    {
+        var result = await ratingService.PublishAsync(productId, request, httpContext.RequestAborted);
+
+        var response = httpContext.CreateResponse(result, "GetProductRating", new { productId, result.Content?.Id });
         return response;
     }
 }

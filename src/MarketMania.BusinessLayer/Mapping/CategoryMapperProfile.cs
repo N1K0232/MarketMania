@@ -10,6 +10,6 @@ public class CategoryMapperProfile : Profile
     public CategoryMapperProfile()
     {
         CreateMap<Entities.Category, Category>();
-        CreateMap<SaveCategoryRequest, Category>();
+        CreateMap<SaveCategoryRequest, Entities.Category>();
     }
 }

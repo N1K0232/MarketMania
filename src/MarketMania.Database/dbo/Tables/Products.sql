@@ -14,6 +14,7 @@
     [DiscountPercentage]    FLOAT                   NULL,
     [Taxes]                 FLOAT                   NULL,
     [TotalPrice]            DECIMAL (18, 2)         NOT NULL,
+    [RatingsCount]          INTEGER                 NOT NULL,
     [RatingsAverage]        FLOAT                   NULL,
     [ImageUrl]              NVARCHAR (2048)         NULL,
     [Tags]                  NVARCHAR (MAX)          NOT NULL,
