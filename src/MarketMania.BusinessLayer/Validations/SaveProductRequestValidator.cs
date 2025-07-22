@@ -55,7 +55,9 @@ public class SaveProductRequestValidator : AbstractValidator<SaveProductRequest>
 
         RuleFor(p => p.Price)
             .GreaterThan(0)
-            .WithMessage("Cannot create a product with 0 or negative total price");
+            .WithMessage("Cannot create a product with 0 or negative total price")
+            .PrecisionScale(18, 2, true)
+            .WithMessage("Please insert a valid price");
 
         RuleFor(p => p.DiscountPercentage)
             .GreaterThan(0)
@@ -67,7 +69,9 @@ public class SaveProductRequestValidator : AbstractValidator<SaveProductRequest>
 
         RuleFor(p => p.ShippingCost)
             .GreaterThan(0)
-            .WithMessage("Cannot create a product with 0 or negative shipping cost");
+            .WithMessage("Cannot create a product with 0 or negative shipping cost")
+            .PrecisionScale(5, 2, true)
+            .WithMessage("Please insert a valid value for the shipping cost");
 
         RuleFor(p => p.Tags)
             .Must(t => t.Length > 0)

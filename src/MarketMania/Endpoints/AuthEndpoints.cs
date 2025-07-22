@@ -2,6 +2,7 @@
 using MarketMania.BusinessLayer.Services.Interfaces;
 using MarketMania.Shared.Models;
 using MarketMania.Shared.Models.Requests;
+using MinimalHelpers.FluentValidation;
 using MinimalHelpers.Routing;
 using OperationResults.AspNetCore.Http;
 
@@ -22,6 +23,7 @@ public class AuthEndpoints : IEndpointRouteHandlerBuilder
 
         authApiGroup.MapPost("login", LoginAsync)
             .AllowAnonymous()
+            .WithValidation<LoginRequest>()
             .Produces<AuthResponse>()
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -37,15 +39,15 @@ public class AuthEndpoints : IEndpointRouteHandlerBuilder
 
         authApiGroup.MapPost("register", RegisterAsync)
             .AllowAnonymous()
+            .WithValidation<RegisterRequest>()
             .Produces(StatusCodes.Status201Created)
-            .Produces(StatusCodes.Status400BadRequest)
             .WithName("register")
             .WithOpenApi();
 
         authApiGroup.MapPost("validate2fa", ValidateTwoFactorAsync)
             .AllowAnonymous()
+            .WithValidation<TwoFactorValidationRequest>()
             .Produces<AuthResponse>()
-            .Produces(StatusCodes.Status400BadRequest)
             .WithName("validate2fa")
             .WithOpenApi();
 
