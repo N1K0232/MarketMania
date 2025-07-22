@@ -49,7 +49,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
     public async Task<Result<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByEmailAsync(request.Email);
-        var signInResult = await signInManager.PasswordSignInAsync(user, request.Password, request.IsPersistent, false);
+        var signInResult = await signInManager.PasswordSignInAsync(user, request.Password, false, false);
 
         if (!signInResult.Succeeded)
         {
