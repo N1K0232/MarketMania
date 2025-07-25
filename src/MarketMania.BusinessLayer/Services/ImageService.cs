@@ -15,8 +15,10 @@ public class ImageService(IApplicationDbContext applicationDbContext, IStoragePr
 {
     public async Task<Result> DeleteAsync(Guid productId, Guid imageId, CancellationToken cancellationToken)
     {
-        var productExists = await applicationDbContext.GetData<Entities.Product>().AnyAsync(p => p.Id == productId, cancellationToken);
-        if (!productExists)
+        await using var transaction = await applicationDbContext.BeginTransactionAsync(cancellationToken);
+        var product = await applicationDbContext.GetData<Entities.Product>().FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
+
+        if (product is null)
         {
             return Result.Fail(FailureReasons.ItemNotFound, "No product found", $"No product found with id {productId}");
         }
@@ -30,7 +32,15 @@ public class ImageService(IApplicationDbContext applicationDbContext, IStoragePr
         await storageProvider.DeleteAsync(image.Path, cancellationToken);
         await applicationDbContext.DeleteAsync(image, cancellationToken);
 
+        product.ImagesCount--;
+        if (product.ImagesCount == 0)
+        {
+            product.ImageUrl = null;
+        }
+
         await applicationDbContext.SaveAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+
         return Result.Ok();
     }
 
@@ -100,24 +110,26 @@ public class ImageService(IApplicationDbContext applicationDbContext, IStoragePr
 
     public async Task<Result<Image>> UploadAsync(Guid productId, Stream stream, string fileName, CancellationToken cancellationToken)
     {
+        await using var transaction = await applicationDbContext.BeginTransactionAsync(cancellationToken);
+        var product = await applicationDbContext.GetData<Entities.Product>(true).FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
+
+        if (product is null)
+        {
+            return Result.Fail(FailureReasons.ItemNotFound, "Invalid product", $"No product found with id {productId}");
+        }
+
         var path = $"products\\{productId}\\{fileName}";
         if (await storageProvider.ExistsAsync(path, cancellationToken))
         {
             return Result.Fail(FailureReasons.Conflict, "This image was already uploaded", "This image was already uploaded");
         }
 
-        var product = await applicationDbContext.GetData<Entities.Product>(true).FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
-        if (product is null)
-        {
-            return Result.Fail(FailureReasons.ItemNotFound, "Invalid product", $"No product found with id {productId}");
-        }
-
         await storageProvider.SaveAsync(path, stream, cancellationToken);
-        var imagesCount = await applicationDbContext.GetData<Entities.Image>().CountAsync(i => i.ProductId == productId, cancellationToken);
 
-        if (imagesCount == 0)
+        if (product.ImagesCount == 0)
         {
             product.ImageUrl = path;
+            product.ImagesCount++;
         }
 
         var dbImage = new Entities.Image
@@ -130,6 +142,8 @@ public class ImageService(IApplicationDbContext applicationDbContext, IStoragePr
 
         await applicationDbContext.InsertAsync(dbImage, cancellationToken);
         await applicationDbContext.SaveAsync(cancellationToken);
+
+        await transaction.CommitAsync(cancellationToken);
 
         var savedImage = mapper.Map<Image>(dbImage);
         return savedImage;

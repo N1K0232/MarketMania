@@ -12,7 +12,7 @@ using Entities = MarketMania.DataAccessLayer.Entities;
 
 namespace MarketMania.BusinessLayer.Services;
 
-public class ProductService(IApplicationDbContext applicationDbContext, ISerialNumberGenerator serialNumberGenerator, IBarcodeGenerator barcodeGenerator, IMapper mapper) : IProductService
+public class ProductService(IApplicationDbContext applicationDbContext, IProductCodeGenerator productCodeGenerator, IMapper mapper) : IProductService
 {
     public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
@@ -79,8 +79,11 @@ public class ProductService(IApplicationDbContext applicationDbContext, ISerialN
         var dbProduct = mapper.Map<Entities.Product>(request);
         dbProduct.TotalPrice = CalculateTotalPrice(request);
 
-        dbProduct.SerialNumber = await GenerateSerialNumberAsync(cancellationToken);
         dbProduct.Barcode = await GenerateBarCodeAsync(cancellationToken);
+        dbProduct.Code = await GenerateCodeAsync(cancellationToken);
+
+        dbProduct.SerialNumber = await GenerateSerialNumberAsync(cancellationToken);
+        dbProduct.SKUCode = await GenerateSKUCodeAsync(cancellationToken);
 
         await applicationDbContext.InsertAsync(dbProduct, cancellationToken);
         await applicationDbContext.SaveAsync(cancellationToken);
@@ -116,16 +119,29 @@ public class ProductService(IApplicationDbContext applicationDbContext, ISerialN
         return price - discountAmount + Convert.ToDecimal(taxes) + shippingCost;
     }
 
-    private async Task<string> GenerateBarCodeAsync(CancellationToken cancellationToken)
+    private async Task<string> GenerateCodeAsync(CancellationToken cancellationToken)
     {
-        string barcode;
-        bool exists;
+        string code;
+        var query = applicationDbContext.GetData<Entities.Product>();
 
         do
         {
-            barcode = await barcodeGenerator.GenerateAsync(cancellationToken);
-            exists = await applicationDbContext.GetData<Entities.Product>().AnyAsync(p => p.Barcode == barcode, cancellationToken);
-        } while (exists);
+            code = await productCodeGenerator.GenerateCodeAsync(cancellationToken);
+        }
+        while (await query.AnyAsync(p => p.Code == code, cancellationToken));
+
+        return code;
+    }
+
+    private async Task<string> GenerateBarCodeAsync(CancellationToken cancellationToken)
+    {
+        string barcode;
+        var query = applicationDbContext.GetData<Entities.Product>();
+
+        do
+        {
+            barcode = await productCodeGenerator.GenerateBarcodeAsync(cancellationToken);
+        } while (await query.AnyAsync(p => p.Barcode == barcode, cancellationToken));
 
         return barcode;
     }
@@ -133,15 +149,28 @@ public class ProductService(IApplicationDbContext applicationDbContext, ISerialN
     private async Task<string> GenerateSerialNumberAsync(CancellationToken cancellationToken)
     {
         string serialNumber;
-        bool exists;
+        var query = applicationDbContext.GetData<Entities.Product>();
 
         do
         {
-            serialNumber = await serialNumberGenerator.GenerateAsync(cancellationToken);
-            exists = await applicationDbContext.GetData<Entities.Product>().AnyAsync(p => p.SerialNumber == serialNumber, cancellationToken);
+            serialNumber = await productCodeGenerator.GenerateSerialNumberAsync(cancellationToken);
         }
-        while (exists);
+        while (await query.AnyAsync(p => p.SerialNumber == serialNumber, cancellationToken));
 
         return serialNumber;
+    }
+
+    private async Task<string> GenerateSKUCodeAsync(CancellationToken cancellationToken)
+    {
+        string skuCode;
+        var query = applicationDbContext.GetData<Entities.Product>();
+
+        do
+        {
+            skuCode = await productCodeGenerator.GenerateSKUAsync(cancellationToken);
+        }
+        while (await query.AnyAsync(p => p.SKUCode == skuCode, cancellationToken));
+
+        return skuCode;
     }
 }
