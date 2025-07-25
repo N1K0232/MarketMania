@@ -10,15 +10,16 @@ using MarketMania.BusinessLayer.Clients.Interfaces;
 using MarketMania.BusinessLayer.Extensions;
 using MarketMania.BusinessLayer.Generators;
 using MarketMania.BusinessLayer.Generators.Interfaces;
+using MarketMania.BusinessLayer.Providers;
 using MarketMania.BusinessLayer.Services;
 using MarketMania.BusinessLayer.Settings;
-using MarketMania.BusinessLayer.Startup;
 using MarketMania.BusinessLayer.Validations;
 using MarketMania.Contracts;
 using MarketMania.DataAccessLayer;
 using MarketMania.Extensions;
 using MarketMania.Requirements;
 using MarketMania.Services;
+using MarketMania.Startup;
 using MarketMania.StorageProviders.Extensions;
 using MarketMania.Swagger;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -52,8 +53,11 @@ builder.Services.AddWebOptimizer(minifyCss: true, minifyJavaScript: builder.Envi
 
 builder.Services.AddDefaultExceptionHandler();
 builder.Services.AddDefaultProblemDetails();
+builder.Services.AddRequestTimeouts();
 
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<TimeZoneTimeProvider>();
+builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -187,8 +191,7 @@ if (settings.ExecuteStartup)
     builder.Services.AddHostedService<IdentityStartupService>();
 }
 
-builder.Services.AddSingleton<IBarcodeGenerator, BarcodeGenerator>();
-builder.Services.AddSingleton<ISerialNumberGenerator, SerialNumberGenerator>();
+builder.Services.AddSingleton<IProductCodeGenerator, ProductCodeGenerator>();
 
 var app = builder.Build();
 app.Environment.ApplicationName = settings.ApplicationName;
