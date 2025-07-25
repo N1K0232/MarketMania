@@ -14,6 +14,10 @@ public class Product : BaseEntity
 
     public string Name { get; set; }
 
+    public string Title { get; set; }
+
+    public string Subtitle { get; set; }
+
     public string Description { get; set; }
 
     public int Quantity { get; set; }
@@ -36,6 +40,8 @@ public class Product : BaseEntity
 
     public string ImageUrl { get; set; }
 
+    public int ImagesCount { get; set; }
+
     public string Tags { get; set; }
 
     public string SeoTitle { get; set; }
@@ -47,6 +53,10 @@ public class Product : BaseEntity
     public string Barcode { get; set; }
 
     public int? SKU { get; set; }
+
+    public string SKUCode { get; set; }
+
+    public string Code { get; set; }
 
     public double Weight { get; set; }
 

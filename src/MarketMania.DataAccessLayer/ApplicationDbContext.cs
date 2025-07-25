@@ -59,9 +59,15 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         await SaveChangesAsync(true, cancellationToken);
     }
 
-    public async Task<DbTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
+    public async ValueTask<DbTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
     {
-        var transaction = await Database.GetDbConnection().BeginTransactionAsync(cancellationToken);
+        var connection = Database.GetDbConnection();
+        if (connection.State is ConnectionState.Closed)
+        {
+            await connection.OpenAsync(cancellationToken);
+        }
+
+        var transaction = await connection.BeginTransactionAsync(cancellationToken);
         return transaction;
     }
 

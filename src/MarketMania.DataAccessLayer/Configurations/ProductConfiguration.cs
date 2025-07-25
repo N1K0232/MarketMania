@@ -12,6 +12,9 @@ internal class ProductConfiguration : BaseEntityConfiguration<Product>
         builder.Property(p => p.Name).HasMaxLength(255).IsRequired();
         builder.Property(p => p.Description).HasMaxLength(4000).IsRequired();
 
+        builder.Property(p => p.Title).HasMaxLength(100).IsRequired();
+        builder.Property(p => p.Subtitle).HasMaxLength(100).IsRequired(false);
+
         builder.Property(p => p.Price).HasPrecision(18, 2).IsRequired();
         builder.Property(p => p.TotalPrice).HasPrecision(18, 2).IsRequired();
         builder.Property(p => p.ShippingCost).HasPrecision(5, 2).IsRequired(false);

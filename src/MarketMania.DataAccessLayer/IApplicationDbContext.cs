@@ -17,5 +17,5 @@ public interface IApplicationDbContext
 
     Task SaveAsync(CancellationToken cancellationToken);
 
-    Task<DbTransaction> BeginTransactionAsync(CancellationToken cancellationToken);
+    ValueTask<DbTransaction> BeginTransactionAsync(CancellationToken cancellationToken);
 }

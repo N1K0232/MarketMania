@@ -6,6 +6,8 @@
     [SupplierId]            UNIQUEIDENTIFIER        NOT NULL,
     [PromotionId]           UNIQUEIDENTIFIER        NULL,
     [Name]                  NVARCHAR (256)          NOT NULL,
+    [Title]                 NVARCHAR (100)          NOT NULL,
+    [Subtitle]              NVARCHAR (100)          NULL,
     [Description]           NVARCHAR (4000)         NOT NULL,
     [Quantity]              INTEGER                 NOT NULL,
     [IsAvailable]           BIT                     NOT NULL,
@@ -17,12 +19,15 @@
     [RatingsCount]          INTEGER                 NOT NULL,
     [RatingsAverage]        FLOAT                   NULL,
     [ImageUrl]              NVARCHAR (2048)         NULL,
+    [ImagesCount]           INTEGER                 NOT NULL,
     [Tags]                  NVARCHAR (MAX)          NOT NULL,
     [SeoTitle]              NVARCHAR (255)          NULL,
     [SeoDescription]        NVARCHAR (4000)         NULL,
     [IsFeatured]            BIT                     NOT NULL,
     [Barcode]               NVARCHAR (100)          NOT NULL,
     [SKU]                   INTEGER                 NULL,
+    [SKUCode]               NVARCHAR (255)          NOT NULL,
+    [Code]                  NVARCHAR (255)          NOT NULL,
     [Weight]                FLOAT                   NOT NULL,         
     [Width]                 FLOAT                   NOT NULL,
     [Height]                FLOAT                   NOT NULL,
@@ -102,5 +107,13 @@ CREATE NONCLUSTERED INDEX [IX_Products_PromotionId]
 ON [dbo].[Products]([PromotionId]);
 
 GO
-CREATE UNIQUE NONCLUSTERED INDEX [IX_Products_Barcode]
+CREATE UNIQUE NONCLUSTERED INDEX [IX_Products_UniqueBarcode]
 ON [dbo].[Products]([Barcode]);
+
+GO
+CREATE UNIQUE NONCLUSTERED INDEX [IX_Products_UniqueSKUCode]
+ON [dbo].[Products]([SKUCode]);
+
+GO
+CREATE UNIQUE NONCLUSTERED INDEX [IX_Products_UniqueCode]
+ON [dbo].[Products]([Code]);

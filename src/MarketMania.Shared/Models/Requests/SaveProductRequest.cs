@@ -7,6 +7,8 @@ public record class SaveProductRequest
     Guid SupplierId,
     Guid? PromotionId,
     string Name,
+    string Title,
+    string Subtitle,
     string Description,
     int Quantity,
     decimal Price,
