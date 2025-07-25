@@ -13,6 +13,8 @@ using MarketMania.BusinessLayer.Generators.Interfaces;
 using MarketMania.BusinessLayer.Providers;
 using MarketMania.BusinessLayer.Services;
 using MarketMania.BusinessLayer.Settings;
+using MarketMania.BusinessLayer.Templating;
+using MarketMania.BusinessLayer.Templating.Interfaces;
 using MarketMania.BusinessLayer.Validations;
 using MarketMania.Contracts;
 using MarketMania.DataAccessLayer;
@@ -192,6 +194,9 @@ if (settings.ExecuteStartup)
 }
 
 builder.Services.AddSingleton<IProductCodeGenerator, ProductCodeGenerator>();
+builder.Services.AddSingleton<IPdfGenerator, ChromiumPdfGenerator>();
+
+builder.Services.AddKeyedSingleton<ITemplateEngine, ScribanTemplateEngine>("scriban");
 
 var app = builder.Build();
 app.Environment.ApplicationName = settings.ApplicationName;

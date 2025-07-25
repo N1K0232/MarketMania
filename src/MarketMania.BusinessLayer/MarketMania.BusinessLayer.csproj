@@ -9,7 +9,9 @@
     <PackageReference Include="AutoMapper" Version="15.0.1" />
     <PackageReference Include="FluentValidation" Version="12.0.0" />
     <PackageReference Include="MailKit" Version="4.13.0" />
+    <PackageReference Include="Microsoft.Playwright" Version="1.54.0" />
     <PackageReference Include="OperationResultTools" Version="1.0.30" />
+    <PackageReference Include="Scriban" Version="6.2.1" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.6" />
     <PackageReference Include="TinyHelpers" Version="3.3.4" />
   </ItemGroup>
