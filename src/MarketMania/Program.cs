@@ -1,6 +1,7 @@
 using System.Net.Mime;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 using FluentValidation;
 using MarketMania.Authentication;
 using MarketMania.Authentication.DataProtection;
@@ -38,6 +39,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using MinimalHelpers.Routing;
 using MinimalHelpers.Validation;
 using OperationResults.AspNetCore.Http;
+using Serilog;
 using SimpleAuthentication;
 using TinyHelpers.AspNetCore.Extensions;
 using TinyHelpers.AspNetCore.OpenApi;
@@ -48,6 +50,11 @@ using ValidationErrorResponseFormat = MinimalHelpers.Validation.ErrorResponseFor
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.local.json", true, true);
+
+builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
+{
+    loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration);
+});
 
 var settings = builder.Services.ConfigureAndGet<AppSettings>(builder.Configuration, nameof(AppSettings));
 var swagger = builder.Services.ConfigureAndGet<SwaggerSettings>(builder.Configuration, nameof(SwaggerSettings));
@@ -90,9 +97,13 @@ if (swagger.IsEnabled)
 {
     builder.Services.AddOpenApi(options =>
     {
-        options.AddDefaultProblemDetailsResponse();
-        options.AddAcceptLanguageHeader();
+        options.RemoveServerList();
         options.AddSimpleAuthentication(builder.Configuration);
+
+        options.AddAcceptLanguageHeader();
+        options.AddDefaultProblemDetailsResponse();
+
+        options.AddOperationParameters();
     });
 }
 
@@ -204,6 +215,11 @@ if (settings.ExecuteStartup)
     builder.Services.AddHostedService<InstallPlaywrightService>();
 }
 
+if (builder.Environment.IsProduction())
+{
+    builder.Services.AddOpenTelemetry().UseAzureMonitor();
+}
+
 builder.Services.AddSingleton<IProductCodeGenerator, ProductCodeGenerator>();
 builder.Services.AddSingleton<IPdfGenerator, ChromiumPdfGenerator>();
 
@@ -229,6 +245,11 @@ app.UseWhen(context => context.IsApiRequest(), builder =>
 {
     builder.UseExceptionHandler();
     builder.UseStatusCodePages();
+});
+
+app.UseSerilogRequestLogging(options =>
+{
+    options.IncludeQueryInRequestPath = true;
 });
 
 app.UseWebOptimizer();
