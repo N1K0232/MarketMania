@@ -1,3 +1,5 @@
+using System.Net.Mime;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentValidation;
 using MarketMania.Authentication;
@@ -19,6 +21,7 @@ using MarketMania.BusinessLayer.Validations;
 using MarketMania.Contracts;
 using MarketMania.DataAccessLayer;
 using MarketMania.Extensions;
+using MarketMania.HealthChecks;
 using MarketMania.Requirements;
 using MarketMania.Services;
 using MarketMania.Startup;
@@ -28,8 +31,10 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using MinimalHelpers.Routing;
 using MinimalHelpers.Validation;
 using OperationResults.AspNetCore.Http;
@@ -188,9 +193,15 @@ builder.Services.Scan(scan => scan.FromAssemblyOf<IdentityService>()
     .AsImplementedInterfaces()
     .WithScopedLifetime());
 
+builder.Services.AddSingleton<PlaywrightHealthCheck>();
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<ApplicationDbContext>("Database", tags: ["ready"])
+    .AddCheck<PlaywrightHealthCheck>("Playwright", tags: ["ready"]);
+
 if (settings.ExecuteStartup)
 {
     builder.Services.AddHostedService<IdentityStartupService>();
+    builder.Services.AddHostedService<InstallPlaywrightService>();
 }
 
 builder.Services.AddSingleton<IProductCodeGenerator, ProductCodeGenerator>();
@@ -243,4 +254,37 @@ app.UseAuthorization();
 app.MapRazorPages();
 app.MapEndpoints();
 
+app.MapHealthChecks("/healthz/live", new HealthCheckOptions
+{
+    Predicate = _ => false,
+    ResponseWriter = HealthChecksResponseWriter()
+});
+
+app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
+{
+    Predicate = healthCheck => healthCheck.Tags.Contains("ready"),
+    ResponseWriter = HealthChecksResponseWriter()
+});
+
 await app.RunAsync();
+
+static Func<HttpContext, HealthReport, Task> HealthChecksResponseWriter()
+    => async (context, report) =>
+    {
+        var result = JsonSerializer.Serialize(
+            new
+            {
+                status = report.Status.ToString(),
+                duration = report.TotalDuration.TotalMilliseconds,
+                details = report.Entries.Select(entry => new
+                {
+                    service = entry.Key,
+                    status = entry.Value.Status.ToString(),
+                    description = entry.Value.Description,
+                    exception = entry.Value.Exception?.Message,
+                })
+            });
+
+        context.Response.ContentType = MediaTypeNames.Application.Json;
+        await context.Response.WriteAsync(result);
+    };
