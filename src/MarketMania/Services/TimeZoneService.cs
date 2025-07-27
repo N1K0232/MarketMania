@@ -4,7 +4,7 @@ namespace MarketMania.Services;
 
 public class TimeZoneService(IHttpContextAccessor httpContextAccessor) : ITimeZoneService
 {
-    private static readonly string HeaderKey = "x-time-zone";
+    public static readonly string HeaderKey = "x-time-zone";
 
     public TimeZoneInfo GetTimeZone()
     {
