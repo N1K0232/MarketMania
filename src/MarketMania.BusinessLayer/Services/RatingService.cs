@@ -17,17 +17,19 @@ public class RatingService(IApplicationDbContext applicationDbContext, IMapper m
 {
     public async Task<Result> DeleteAsync(Guid productId, Guid ratingId, CancellationToken cancellationToken)
     {
-        var productExists = await applicationDbContext.GetData<Entities.Product>().AnyAsync(p => p.Id == productId && p.IsPublished, cancellationToken);
-        if (!productExists)
+        var product = await applicationDbContext.GetData<Entities.Product>(true).FirstOrDefaultAsync(p => p.Id == productId && p.IsPublished, cancellationToken);
+        if (product is null)
         {
             return Result.Fail(FailureReasons.ItemNotFound, "No product found", $"No product found with id {productId}");
         }
 
         var rating = await applicationDbContext.GetAsync<Entities.Rating>(ratingId, cancellationToken);
-        if (rating != null)
+        if (rating is not null)
         {
             return Result.Fail(FailureReasons.ItemNotFound, "No rating found", $"No rating found with id {ratingId}");
         }
+
+        product.RatingsCount--;
 
         await applicationDbContext.DeleteAsync(rating, cancellationToken);
         await applicationDbContext.SaveAsync(cancellationToken);
@@ -76,9 +78,7 @@ public class RatingService(IApplicationDbContext applicationDbContext, IMapper m
 
     public async Task<Result<Rating>> PublishAsync(Guid productId, NewRatingRequest request, CancellationToken cancellationToken)
     {
-        await using var transaction = await applicationDbContext.BeginTransactionAsync(cancellationToken);
         var product = await applicationDbContext.GetData<Entities.Product>(true).FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
-
         if (product is null)
         {
             return Result.Fail(FailureReasons.ItemNotFound, "No product found", $"No product found with id {productId}");
@@ -88,13 +88,14 @@ public class RatingService(IApplicationDbContext applicationDbContext, IMapper m
         dbRating.ProductId = productId;
         dbRating.UserId = Guid.Parse(httpContextAccessor.HttpContext.User.GetClaimValue(ClaimTypes.NameIdentifier));
 
-        await applicationDbContext.InsertAsync(dbRating, cancellationToken);
-
         product.RatingsCount++;
         product.RatingsAverage = request.Score / product.RatingsCount;
 
-        await applicationDbContext.SaveAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
+        await applicationDbContext.ExecuteTransactionAsync(async (token) =>
+        {
+            await applicationDbContext.InsertAsync(dbRating, token);
+            await applicationDbContext.SaveAsync(token);
+        }, cancellationToken);
 
         var savedRating = mapper.Map<Rating>(dbRating);
         return savedRating;

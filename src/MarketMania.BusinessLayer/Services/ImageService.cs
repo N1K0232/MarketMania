@@ -15,9 +15,7 @@ public class ImageService(IApplicationDbContext applicationDbContext, IStoragePr
 {
     public async Task<Result> DeleteAsync(Guid productId, Guid imageId, CancellationToken cancellationToken)
     {
-        await using var transaction = await applicationDbContext.BeginTransactionAsync(cancellationToken);
         var product = await applicationDbContext.GetData<Entities.Product>().FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
-
         if (product is null)
         {
             return Result.Fail(FailureReasons.ItemNotFound, "No product found", $"No product found with id {productId}");
@@ -39,8 +37,6 @@ public class ImageService(IApplicationDbContext applicationDbContext, IStoragePr
         }
 
         await applicationDbContext.SaveAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
-
         return Result.Ok();
     }
 
@@ -110,9 +106,7 @@ public class ImageService(IApplicationDbContext applicationDbContext, IStoragePr
 
     public async Task<Result<Image>> UploadAsync(Guid productId, Stream stream, string fileName, CancellationToken cancellationToken)
     {
-        await using var transaction = await applicationDbContext.BeginTransactionAsync(cancellationToken);
         var product = await applicationDbContext.GetData<Entities.Product>(true).FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
-
         if (product is null)
         {
             return Result.Fail(FailureReasons.ItemNotFound, "Invalid product", $"No product found with id {productId}");
@@ -140,10 +134,11 @@ public class ImageService(IApplicationDbContext applicationDbContext, IStoragePr
             Length = stream.Length,
         };
 
-        await applicationDbContext.InsertAsync(dbImage, cancellationToken);
-        await applicationDbContext.SaveAsync(cancellationToken);
-
-        await transaction.CommitAsync(cancellationToken);
+        await applicationDbContext.ExecuteTransactionAsync(async (token) =>
+        {
+            await applicationDbContext.InsertAsync(dbImage, token);
+            await applicationDbContext.SaveAsync(token);
+        }, cancellationToken);
 
         var savedImage = mapper.Map<Image>(dbImage);
         return savedImage;
