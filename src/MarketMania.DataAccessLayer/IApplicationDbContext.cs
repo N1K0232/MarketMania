@@ -1,5 +1,4 @@
-﻿using System.Data.Common;
-using MarketMania.DataAccessLayer.Entities.Common;
+﻿using MarketMania.DataAccessLayer.Entities.Common;
 
 namespace MarketMania.DataAccessLayer;
 
@@ -17,5 +16,5 @@ public interface IApplicationDbContext
 
     Task SaveAsync(CancellationToken cancellationToken);
 
-    ValueTask<DbTransaction> BeginTransactionAsync(CancellationToken cancellationToken);
+    Task ExecuteTransactionAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken);
 }
