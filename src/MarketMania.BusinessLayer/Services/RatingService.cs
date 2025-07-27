@@ -24,7 +24,7 @@ public class RatingService(IApplicationDbContext applicationDbContext, IMapper m
         }
 
         var rating = await applicationDbContext.GetAsync<Entities.Rating>(ratingId, cancellationToken);
-        if (rating is not null)
+        if (rating is null)
         {
             return Result.Fail(FailureReasons.ItemNotFound, "No rating found", $"No rating found with id {ratingId}");
         }
