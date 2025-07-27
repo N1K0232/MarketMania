@@ -1,6 +1,7 @@
 using System.Net.Mime;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using FluentValidation;
 using MarketMania.Authentication;
@@ -36,6 +37,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.OpenApi.Models;
 using MinimalHelpers.Routing;
 using MinimalHelpers.Validation;
 using OperationResults.AspNetCore.Http;
@@ -67,11 +69,43 @@ builder.Services.AddWebOptimizer(minifyCss: true, minifyJavaScript: builder.Envi
 
 builder.Services.AddDefaultExceptionHandler();
 builder.Services.AddDefaultProblemDetails();
+
+builder.Services.AddMemoryCache();
 builder.Services.AddRequestTimeouts();
 
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<TimeZoneTimeProvider>();
 builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy(settings.ApplicationName, context =>
+    {
+        var permitLimit = int.TryParse(context.User.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.PermitLimit)?.Value, out var requestsPerWindow) ? requestsPerWindow : 3;
+        var window = int.TryParse(context.User.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.Window)?.Value, out var windowMinutes) ? TimeSpan.FromMinutes(windowMinutes) : TimeSpan.FromMinutes(1);
+
+        return RateLimitPartition.GetFixedWindowLimiter(context.User.Identity?.Name.GetValueOrDefault("Default"), _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = permitLimit,
+            Window = window,
+            QueueLimit = 0,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+        });
+    });
+
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.OnRejected = (context, _) =>
+    {
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var window))
+        {
+            var response = context.HttpContext.Response;
+            response.Headers.RetryAfter = window.TotalSeconds.ToString();
+        }
+
+        return ValueTask.CompletedTask;
+    };
+});
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -91,6 +125,17 @@ builder.Services.AddOperationResult(options =>
 builder.Services.ConfigureValidation(options =>
 {
     options.ErrorResponseFormat = ValidationErrorResponseFormat.List;
+});
+
+builder.Services.AddOpenApiOperationParameters(options =>
+{
+    options.Parameters.Add(new()
+    {
+        Name = TimeZoneService.HeaderKey,
+        In = ParameterLocation.Header,
+        Required = false,
+        Schema = OpenApiSchemaHelper.CreateStringSchema()
+    });
 });
 
 if (swagger.IsEnabled)
@@ -211,6 +256,7 @@ builder.Services.AddHealthChecks()
 
 if (settings.ExecuteStartup)
 {
+    builder.Services.AddHostedService<DatabaseInitializerService>();
     builder.Services.AddHostedService<IdentityStartupService>();
     builder.Services.AddHostedService<InstallPlaywrightService>();
 }
@@ -269,8 +315,12 @@ if (swagger.IsEnabled)
 app.UseRouting();
 app.UseRequestLocalization();
 
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseWhen(context => context.IsApiRequest(), builder =>
+{
+    builder.UseAuthentication();
+    builder.UseAuthorization();
+    builder.UseRateLimiter();
+});
 
 app.MapRazorPages();
 app.MapEndpoints();
