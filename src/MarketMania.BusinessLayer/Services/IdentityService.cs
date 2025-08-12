@@ -4,9 +4,10 @@ using MarketMania.Authentication;
 using MarketMania.Authentication.DataProtection;
 using MarketMania.Authentication.Entities;
 using MarketMania.Authentication.Generators.Interfaces;
-using MarketMania.BusinessLayer.Clients.Interfaces;
 using MarketMania.BusinessLayer.Resources;
 using MarketMania.BusinessLayer.Services.Interfaces;
+using MarketMania.Clients.Interfaces;
+using MarketMania.Clients.Models.Email;
 using MarketMania.Contracts;
 using MarketMania.Shared.Models;
 using MarketMania.Shared.Models.Requests;
@@ -106,7 +107,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
             TextContent = string.Format(Messages.VerifyEmail, page)
         };
 
-        var response = await emailClient.SendEmailAsync(emailMessage, cancellationToken);
+        var response = await emailClient.SendAsync(emailMessage, cancellationToken);
         if (!response.Succeed)
         {
             return Result.Fail(FailureReasons.ClientError, "Unable to complete registration", response.ErrorMessage);
