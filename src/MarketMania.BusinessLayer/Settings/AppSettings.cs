@@ -8,6 +8,10 @@ public class AppSettings
 
     public bool ExecuteStartup { get; init; }
 
+    public string PdfSmithSubscriptionKey { get; init; }
+
+    public string SentimentSubscriptionKey { get; init; }
+
     public string StorageFolder { get; init; }
 
     public string[] SupportedCultures { get; init; }
