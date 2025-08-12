@@ -2,6 +2,7 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using MarketMania.BusinessLayer.Services.Interfaces;
+using MarketMania.Clients.Interfaces;
 using MarketMania.DataAccessLayer;
 using MarketMania.Shared.Models;
 using MarketMania.Shared.Models.Requests;
@@ -13,7 +14,7 @@ using Entities = MarketMania.DataAccessLayer.Entities;
 
 namespace MarketMania.BusinessLayer.Services;
 
-public class RatingService(IApplicationDbContext applicationDbContext, IMapper mapper, IHttpContextAccessor httpContextAccessor) : IRatingService
+public class RatingService(IApplicationDbContext applicationDbContext, ISentimentAnalysisClient sentimentAnalysisClient, IMapper mapper, IHttpContextAccessor httpContextAccessor) : IRatingService
 {
     public async Task<Result> DeleteAsync(Guid productId, Guid ratingId, CancellationToken cancellationToken)
     {
@@ -88,14 +89,14 @@ public class RatingService(IApplicationDbContext applicationDbContext, IMapper m
         dbRating.ProductId = productId;
         dbRating.UserId = Guid.Parse(httpContextAccessor.HttpContext.User.GetClaimValue(ClaimTypes.NameIdentifier));
 
+        var sentimentResponse = await sentimentAnalysisClient.GetPredictionAsync(request.Text, cancellationToken);
+        dbRating.SentimentScore = sentimentResponse.Score;
+
         product.RatingsCount++;
         product.RatingsAverage = request.Score / product.RatingsCount;
 
-        await applicationDbContext.ExecuteTransactionAsync(async (token) =>
-        {
-            await applicationDbContext.InsertAsync(dbRating, token);
-            await applicationDbContext.SaveAsync(token);
-        }, cancellationToken);
+        await applicationDbContext.InsertAsync(dbRating, cancellationToken);
+        await applicationDbContext.SaveAsync(cancellationToken);
 
         var savedRating = mapper.Map<Rating>(dbRating);
         return savedRating;
