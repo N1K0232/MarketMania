@@ -9,17 +9,14 @@ using MarketMania.Authentication.DataProtection;
 using MarketMania.Authentication.Entities;
 using MarketMania.Authentication.Generators;
 using MarketMania.Authentication.Generators.Interfaces;
-using MarketMania.BusinessLayer.Clients;
-using MarketMania.BusinessLayer.Clients.Interfaces;
 using MarketMania.BusinessLayer.Extensions;
 using MarketMania.BusinessLayer.Generators;
 using MarketMania.BusinessLayer.Generators.Interfaces;
 using MarketMania.BusinessLayer.Providers;
 using MarketMania.BusinessLayer.Services;
 using MarketMania.BusinessLayer.Settings;
-using MarketMania.BusinessLayer.Templating;
-using MarketMania.BusinessLayer.Templating.Interfaces;
 using MarketMania.BusinessLayer.Validations;
+using MarketMania.Clients.Extensions;
 using MarketMania.Contracts;
 using MarketMania.DataAccessLayer;
 using MarketMania.Extensions;
@@ -70,7 +67,7 @@ builder.Services.AddWebOptimizer(minifyCss: true, minifyJavaScript: builder.Envi
 builder.Services.AddDefaultExceptionHandler();
 builder.Services.AddDefaultProblemDetails();
 
-builder.Services.AddMemoryCache();
+builder.Services.AddHybridCache();
 builder.Services.AddRequestTimeouts();
 
 builder.Services.AddSingleton(TimeProvider.System);
@@ -170,8 +167,16 @@ builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
 builder.Services.AddSingleton<IPageService, PageService>();
 builder.Services.AddSingleton<IQRCodeGenerator, QRCodeHandlerGenerator>();
 
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-builder.Services.AddSingleton<IEmailClient, EmailClient>();
+builder.Services.AddEmailClient(builder.Configuration);
+builder.Services.AddSentimentApiClient(options =>
+{
+    options.SubscriptionKey = settings.SentimentSubscriptionKey;
+});
+
+builder.Services.AddPdfSmithClient(options =>
+{
+    options.SubscriptionKey = settings.PdfSmithSubscriptionKey;
+});
 
 builder.Services.AddAzureSql<ApplicationDbContext>(builder.Configuration.GetConnectionString("SqlConnection"));
 builder.Services.AddScoped<IApplicationDbContext>(services => services.GetRequiredService<ApplicationDbContext>());
@@ -258,7 +263,6 @@ if (settings.ExecuteStartup)
 {
     builder.Services.AddHostedService<DatabaseInitializerService>();
     builder.Services.AddHostedService<IdentityStartupService>();
-    builder.Services.AddHostedService<InstallPlaywrightService>();
 }
 
 if (builder.Environment.IsProduction())
@@ -267,9 +271,6 @@ if (builder.Environment.IsProduction())
 }
 
 builder.Services.AddSingleton<IProductCodeGenerator, ProductCodeGenerator>();
-builder.Services.AddSingleton<IPdfGenerator, ChromiumPdfGenerator>();
-
-builder.Services.AddKeyedSingleton<ITemplateEngine, ScribanTemplateEngine>("scriban");
 
 var app = builder.Build();
 app.Environment.ApplicationName = settings.ApplicationName;
