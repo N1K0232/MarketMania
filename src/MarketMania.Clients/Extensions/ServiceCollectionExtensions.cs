@@ -55,15 +55,4 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
-
-    public static IServiceCollection AddTranslatorClient(this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services, nameof(services));
-
-        services.AddHttpClient<ITranslatorClient, TranslatorClient>(client =>
-        {
-        });
-
-        return services;
-    }
 }
