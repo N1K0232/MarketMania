@@ -30,7 +30,14 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
 
     public async Task<Result<Product>> GetAsync(Guid id, CancellationToken cancellationToken)
     {
-        var dbProduct = await applicationDbContext.GetAsync<Entities.Product>(id, cancellationToken);
+        var dbProduct = await applicationDbContext.GetData<Entities.Product>()
+            .Include(p => p.Brand)
+            .Include(p => p.Category)
+            .Include(p => p.Supplier)
+            .Include(p => p.Images)
+            .Include(p => p.Ratings)
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+
         if (dbProduct is null)
         {
             return Result.Fail(FailureReasons.ItemNotFound, "Product not found", $"No product found with id {id}");
@@ -51,6 +58,8 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
             .Include(p => p.Brand)
             .Include(p => p.Category)
             .Include(p => p.Supplier)
+            .Include(p => p.Images)
+            .Include(p => p.Ratings)
             .WhereIf(request.Name.HasValue(), p => p.Name.Contains(request.Name))
             .WhereIf(request.Brand.HasValue(), p => p.Brand.Name.Contains(request.Brand))
             .WhereIf(request.Category.HasValue(), p => p.Category.Name.Contains(request.Category))
