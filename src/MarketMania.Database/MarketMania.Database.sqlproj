@@ -79,6 +79,7 @@
     <Build Include="dbo\Tables\Ratings.sql" />
     <Build Include="dbo\Tables\ShoppingCarts.sql" />
     <Build Include="dbo\Tables\ShoppingCartItems.sql" />
+    <Build Include="dbo\Tables\Specifications.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MarketMania.Database.publish.xml" />

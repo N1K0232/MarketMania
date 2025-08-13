@@ -123,6 +123,42 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
             .Produces(StatusCodes.Status404NotFound)
             .WithName("PublishProductRating")
             .WithOpenApi();
+
+        productsApiGroup.MapDelete("{productId:guid}/specifications/{specificationId:guid}", DeleteSpecificationAsync)
+            .RequireAuthorization("Admin")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("DeleteProductSpecification")
+            .WithOpenApi();
+
+        productsApiGroup.MapGet("{productId:guid}/specifications/{specificationId:guid}", GetSpecificationAsync)
+            .AllowAnonymous()
+            .Produces<Specification>()
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("GetProductSpecification")
+            .WithOpenApi();
+
+        productsApiGroup.MapGet("{productId:guid}/specifications", GetSpecificationsAsync)
+            .AllowAnonymous()
+            .Produces<IEnumerable<Specification>>()
+            .WithName("GetProductSpecifications")
+            .WithOpenApi();
+
+        productsApiGroup.MapPost("{productId:guid}/specifications", InsertSpecificationAsync)
+            .RequireAuthorization("Admin")
+            .Produces<Specification>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithValidation<SaveSpecificationRequest>()
+            .WithName("InsertProductSpecification")
+            .WithOpenApi();
+
+        productsApiGroup.MapPut("{productId:guid}/specifications/{specificationId:guid}", UpdateSpecificationAsync)
+            .RequireAuthorization("Admin")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithValidation<SaveSpecificationRequest>()
+            .WithName("UpdateProductSpecification")
+            .WithOpenApi();
     }
 
     public static async Task<IResult> DeleteAsync(Guid id, IProductService productService, HttpContext httpContext)
@@ -234,6 +270,46 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         var result = await ratingService.PublishAsync(productId, request, httpContext.RequestAborted);
 
         var response = httpContext.CreateResponse(result, "GetProductRating", new { productId, result.Content?.Id });
+        return response;
+    }
+
+    public static async Task<IResult> DeleteSpecificationAsync(Guid productId, Guid specificationId, ISpecificationService specificationService, HttpContext httpContext)
+    {
+        var result = await specificationService.DeleteAsync(productId, specificationId, httpContext.RequestAborted);
+
+        var response = httpContext.CreateResponse(result);
+        return response;
+    }
+
+    public static async Task<IResult> GetSpecificationAsync(Guid productId, Guid specificationId, ISpecificationService specificationService, HttpContext httpContext)
+    {
+        var result = await specificationService.GetAsync(productId, specificationId, httpContext.RequestAborted);
+
+        var response = httpContext.CreateResponse(result);
+        return response;
+    }
+
+    public static async Task<IResult> GetSpecificationsAsync(Guid productId, string name, ISpecificationService specificationService, HttpContext httpContext)
+    {
+        var result = await specificationService.GetListAsync(productId, name, httpContext.RequestAborted);
+
+        var response = httpContext.CreateResponse(result);
+        return response;
+    }
+
+    public static async Task<IResult> InsertSpecificationAsync(Guid productId, SaveSpecificationRequest request, ISpecificationService specificationService, HttpContext httpContext)
+    {
+        var result = await specificationService.InsertAsync(productId, request, httpContext.RequestAborted);
+
+        var response = httpContext.CreateResponse(result, "GetSpecification", new { productId, result.Content?.Id });
+        return response;
+    }
+
+    public static async Task<IResult> UpdateSpecificationAsync(Guid productId, Guid specificationId, SaveSpecificationRequest request, ISpecificationService specificationService, HttpContext httpContext)
+    {
+        var result = await specificationService.UpdateAsync(productId, specificationId, request, httpContext.RequestAborted);
+
+        var response = httpContext.CreateResponse(result);
         return response;
     }
 }

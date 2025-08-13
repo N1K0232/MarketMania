@@ -36,6 +36,7 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
             .Include(p => p.Supplier)
             .Include(p => p.Images)
             .Include(p => p.Ratings)
+            .Include(p => p.Specifications)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
         if (dbProduct is null)
@@ -60,6 +61,7 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
             .Include(p => p.Supplier)
             .Include(p => p.Images)
             .Include(p => p.Ratings)
+            .Include(p => p.Specifications)
             .WhereIf(request.Name.HasValue(), p => p.Name.Contains(request.Name))
             .WhereIf(request.Brand.HasValue(), p => p.Brand.Name.Contains(request.Brand))
             .WhereIf(request.Category.HasValue(), p => p.Category.Name.Contains(request.Category))

@@ -98,5 +98,7 @@ public class Product : BaseEntity
 
     public virtual ICollection<Rating> Ratings { get; set; }
 
+    public virtual ICollection<Specification> Specifications { get; set; }
+
     public virtual ICollection<ShoppingCartItem> ShoppingCartItems { get; set; }
 }

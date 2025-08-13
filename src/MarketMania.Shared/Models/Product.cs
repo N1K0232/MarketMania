@@ -75,4 +75,6 @@ public class Product
     public bool IsPublished { get; set; }
 
     public DateTime? PublishedAt { get; set; }
+
+    public IEnumerable<Specification> Specifications { get; set; }
 }
