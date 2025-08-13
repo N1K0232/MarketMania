@@ -301,7 +301,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
     {
         var result = await specificationService.InsertAsync(productId, request, httpContext.RequestAborted);
 
-        var response = httpContext.CreateResponse(result, "GetSpecification", new { productId, result.Content?.Id });
+        var response = httpContext.CreateResponse(result, "GetProductSpecification", new { productId = productId, specificationId = result.Content?.Id });
         return response;
     }
 
