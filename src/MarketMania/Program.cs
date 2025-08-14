@@ -20,7 +20,6 @@ using MarketMania.Clients.Extensions;
 using MarketMania.Contracts;
 using MarketMania.DataAccessLayer;
 using MarketMania.Extensions;
-using MarketMania.HealthChecks;
 using MarketMania.Requirements;
 using MarketMania.Services;
 using MarketMania.Startup;
@@ -260,10 +259,7 @@ builder.Services.Scan(scan => scan.FromAssemblyOf<IdentityService>()
     .AsImplementedInterfaces()
     .WithScopedLifetime());
 
-builder.Services.AddSingleton<PlaywrightHealthCheck>();
-builder.Services.AddHealthChecks()
-    .AddDbContextCheck<ApplicationDbContext>("Database", tags: ["ready"])
-    .AddCheck<PlaywrightHealthCheck>("Playwright", tags: ["ready"]);
+builder.Services.AddHealthChecks().AddDbContextCheck<ApplicationDbContext>("Database", tags: ["ready"]);
 
 if (settings.ExecuteStartup)
 {
