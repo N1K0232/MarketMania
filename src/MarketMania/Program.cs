@@ -30,7 +30,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -43,7 +42,6 @@ using SimpleAuthentication;
 using TinyHelpers.AspNetCore.Extensions;
 using TinyHelpers.AspNetCore.OpenApi;
 using TinyHelpers.Extensions;
-using TinyHelpers.Json.Serialization;
 using ResultErrorResponseFormat = OperationResults.AspNetCore.Http.ErrorResponseFormat;
 using ValidationErrorResponseFormat = MinimalHelpers.Validation.ErrorResponseFormat;
 
@@ -107,11 +105,10 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
-    options.SerializerOptions.Converters.Add(new UtcDateTimeConverter());
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
-builder.Services.Configure<FormOptions>(options =>
+builder.Services.ConfigureFormOptions(options =>
 {
     options.MultipartBodyLengthLimit = settings.MaxUploadSize;
 });
