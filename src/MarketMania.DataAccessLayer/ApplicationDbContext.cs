@@ -80,6 +80,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseExceptionProcessor();
+        optionsBuilder.EnableSensitiveDataLogging();
+
         base.OnConfiguring(optionsBuilder);
     }
 
