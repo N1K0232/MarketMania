@@ -110,7 +110,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
         var response = await emailClient.SendAsync(emailMessage, cancellationToken);
         if (!response.Succeed)
         {
-            return Result.Fail(FailureReasons.ClientError, "Unable to complete registration", response.ErrorMessage);
+            return Result.Fail(FailureReasons.ClientError, "Unable to complete registration");
         }
 
         return Result.Ok();

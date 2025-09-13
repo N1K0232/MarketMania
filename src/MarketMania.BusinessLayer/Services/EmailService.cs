@@ -15,6 +15,6 @@ public class EmailService(IEmailClient emailClient) : IEmailService
             return Result.Ok();
         }
 
-        return Result.Fail(FailureReasons.ClientError, "Unable to send the email", response.ErrorMessage);
+        return Result.Fail(FailureReasons.ClientError, "Unable to send the email");
     }
 }
