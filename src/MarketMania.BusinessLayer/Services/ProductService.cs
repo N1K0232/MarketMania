@@ -12,8 +12,23 @@ using Entities = MarketMania.DataAccessLayer.Entities;
 
 namespace MarketMania.BusinessLayer.Services;
 
-public class ProductService(IApplicationDbContext applicationDbContext, IProductCodeGenerator productCodeGenerator, IMapper mapper) : IProductService
+public class ProductService(IApplicationDbContext applicationDbContext, IProductCodeGenerator productCodeGenerator, TimeProvider timeProvider, IMapper mapper) : IProductService
 {
+    public async Task<Result> ConfirmAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var product = await applicationDbContext.GetAsync<Entities.Product>(id, cancellationToken);
+        if (product is null)
+        {
+            return Result.Fail(FailureReasons.ItemNotFound, "Product not found", $"No product found with id {id}");
+        }
+
+        product.IsPublished = true;
+        product.PublishedAt = DateTime.UtcNow;
+
+        await applicationDbContext.SaveAsync(cancellationToken);
+        return Result.Ok();
+    }
+
     public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         var product = await applicationDbContext.GetAsync<Entities.Product>(id, cancellationToken);
@@ -53,7 +68,7 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
         return product;
     }
 
-    public async Task<Result<PaginatedList<Product>>> GetListAsync(SearchProductRequest request, CancellationToken cancellationToken)
+    public async Task<Result<PaginatedList<Product>>> GetListAsync(string name, string brand, string category, int pageIndex, int itemsPerPage, string orderBy, CancellationToken cancellationToken)
     {
         var query = applicationDbContext.GetData<Entities.Product>()
             .Include(p => p.Brand)
@@ -62,26 +77,26 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
             .Include(p => p.Images)
             .Include(p => p.Ratings)
             .Include(p => p.Specifications)
-            .WhereIf(request.Name.HasValue(), p => p.Name.Contains(request.Name))
-            .WhereIf(request.Brand.HasValue(), p => p.Brand.Name.Contains(request.Brand))
-            .WhereIf(request.Category.HasValue(), p => p.Category.Name.Contains(request.Category))
+            .WhereIf(name.HasValue(), p => p.Name.Contains(name))
+            .WhereIf(brand.HasValue(), p => p.Brand.Name.Contains(brand))
+            .WhereIf(category.HasValue(), p => p.Category.Name.Contains(category))
             .Where(p => p.IsPublished);
 
         var totalCount = await query.CountAsync(cancellationToken);
 
         try
         {
-            query = query.OrderBy(request.OrderBy);
+            query = query.OrderBy(orderBy);
         }
         catch (ParseException ex)
         {
             return Result.Fail(FailureReasons.ClientError, "Unable to order", ex.Message);
         }
 
-        var dbProducts = await query.Skip(request.PageIndex * request.ItemsPerPage).Take(request.ItemsPerPage + 1).ToListAsync(cancellationToken);
-        var products = mapper.Map<IEnumerable<Product>>(dbProducts).Take(request.ItemsPerPage);
+        var dbProducts = await query.Skip(pageIndex * itemsPerPage).Take(itemsPerPage + 1).ToListAsync(cancellationToken);
+        var products = mapper.Map<IEnumerable<Product>>(dbProducts).Take(itemsPerPage);
 
-        var list = new PaginatedList<Product>(products, totalCount, dbProducts.Count > request.ItemsPerPage);
+        var list = new PaginatedList<Product>(products, totalCount, dbProducts.Count > itemsPerPage);
         return list;
     }
 

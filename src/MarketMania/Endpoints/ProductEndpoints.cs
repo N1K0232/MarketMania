@@ -18,6 +18,13 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
     {
         var productsApiGroup = endpoints.MapGroup("/api/products");
 
+        productsApiGroup.MapPost("{id:guid}/confirm", ConfirmAsync)
+            .RequireAuthorization("Admin")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("ConfirmProduct")
+            .WithOpenApi();
+
         productsApiGroup.MapDelete("{id:guid}", DeleteAsync)
             .RequireAuthorization("Admin")
             .Produces(StatusCodes.Status204NoContent)
@@ -161,6 +168,14 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
             .WithOpenApi();
     }
 
+    public static async Task<IResult> ConfirmAsync(Guid id, IProductService productService, HttpContext httpContext)
+    {
+        var result = await productService.ConfirmAsync(id, httpContext.RequestAborted);
+
+        var response = httpContext.CreateResponse(result);
+        return response;
+    }
+
     public static async Task<IResult> DeleteAsync(Guid id, IProductService productService, HttpContext httpContext)
     {
         var result = await productService.DeleteAsync(id, httpContext.RequestAborted);
@@ -177,9 +192,9 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetListAsync([AsParameters] SearchProductRequest request, IProductService productService, HttpContext httpContext)
+    public static async Task<IResult> GetListAsync(IProductService productService, HttpContext httpContext, string name, string brand, string category, int pageIndex = 0, int itemsPerPage = 50, string orderBy = "Name, Price")
     {
-        var result = await productService.GetListAsync(request, httpContext.RequestAborted);
+        var result = await productService.GetListAsync(name, brand, category, pageIndex, itemsPerPage, orderBy, httpContext.RequestAborted);
 
         var response = httpContext.CreateResponse(result);
         return response;
@@ -227,7 +242,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
 
     public static async Task<IResult> ReadStreamAsync(Guid productId, Guid imageId, IImageService imageService, HttpContext httpContext)
     {
-        var result = await imageService.DeleteAsync(productId, imageId, httpContext.RequestAborted);
+        var result = await imageService.ReadAsync(productId, imageId, httpContext.RequestAborted);
 
         var response = httpContext.CreateResponse(result);
         return response;
@@ -235,9 +250,9 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
 
     public static async Task<IResult> UploadImageAsync(Guid productId, [Required][AllowedExtensions("*.jpg", "*.png")] IFormFile file, IImageService imageService, HttpContext httpContext)
     {
-        var result = await imageService.UploadAsync(productId, file.OpenReadStream(), file.FileName, httpContext.RequestAborted);
+        var result = await imageService.UploadAsync(productId, file, httpContext.RequestAborted);
 
-        var response = httpContext.CreateResponse(result, "GetProductImage", new { id = result.Content?.Id, productId });
+        var response = httpContext.CreateResponse(result, "GetProductImage", new { productId = productId, imageId = result.Content?.Id });
         return response;
     }
 
