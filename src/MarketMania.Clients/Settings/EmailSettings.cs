@@ -8,10 +8,6 @@ public class EmailSettings
 
     public bool UseSsl { get; init; }
 
-    public string SenderName { get; init; }
-
-    public string SenderEmail { get; init; }
-
     public string UserName { get; init; }
 
     public string Password { get; init; }

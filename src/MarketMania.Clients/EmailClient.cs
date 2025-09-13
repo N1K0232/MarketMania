@@ -1,4 +1,5 @@
 ﻿using MailKit.Net.Smtp;
+using MarketMania.Clients.Extensions;
 using MarketMania.Clients.Interfaces;
 using MarketMania.Clients.Models.Email;
 using MarketMania.Clients.Settings;
@@ -11,14 +12,11 @@ public class EmailClient(IOptions<EmailSettings> emailSettingsOptions) : IEmailC
 {
     private readonly EmailSettings emailSettings = emailSettingsOptions.Value;
 
-    private SmtpClient client = new SmtpClient();
+    private SmtpClient client = new();
     private bool disposed = false;
 
     public async Task<SendEmailResponse> SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default)
     {
-        emailMessage.SenderName = emailSettings.SenderName;
-        emailMessage.SenderEmail = emailSettings.SenderEmail;
-
         var message = CreateMessage(emailMessage);
 
         if (emailSettings.IgnoreServerCertificateErrors)
@@ -26,27 +24,18 @@ public class EmailClient(IOptions<EmailSettings> emailSettingsOptions) : IEmailC
             client.ServerCertificateValidationCallback = (_, _, _, _) => true;
         }
 
-        try
-        {
-            await client.ConnectAsync(emailSettings.Host, emailSettings.Port, emailSettings.UseSsl, cancellationToken);
+        await client.ConnectAsync(emailSettings.Host, emailSettings.Port, emailSettings.UseSsl, cancellationToken).ConfigureAwait(false);
 
-            if (!string.IsNullOrWhiteSpace(emailSettings.UserName) && !string.IsNullOrWhiteSpace(emailSettings.Password))
-            {
-                await client.AuthenticateAsync(emailSettings.UserName, emailSettings.Password, cancellationToken);
-            }
-
-            await client.SendAsync(message, cancellationToken);
-        }
-        catch (Exception ex)
+        if (emailSettings.UserName.HasValue() && emailSettings.Password.HasValue())
         {
-            return new SendEmailResponse(false, ex.Message);
-        }
-        finally
-        {
-            await client.DisconnectAsync(true, cancellationToken);
+            await client.AuthenticateAsync(emailSettings.UserName, emailSettings.Password, cancellationToken).ConfigureAwait(false);
         }
 
-        return new SendEmailResponse(true);
+        await client.SendAsync(message, cancellationToken).ConfigureAwait(false);
+        await client.DisconnectAsync(true, cancellationToken).ConfigureAwait(false);
+
+        var response = new SendEmailResponse(true, message.MessageId);
+        return response;
     }
 
     private static MimeMessage CreateMessage(EmailMessage emailMessage)

@@ -6,7 +6,36 @@
     ViewData["Title"] = "Home page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div x-data="productsList" x-cloak x-init="loadProducts()" class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md 6 mx-auto">
+            <input type="text" class="form-control" placeholder="Search" x-model="name" />
+        </div>
+    </div>
+    <div class="row" x-show="list.items.length > 0">
+        <template x-for="product in list.items" :key="product.id">
+            <div class="col-md-4 mb-3">
+                <div class="card h-100" @@click="goToDetails(product.id)" style="cursor:pointer;">
+                    <img :src="product.imageSource" class="card-img-top" alt=""
+                         style="height:200px;object-fit:cover;">
+                    <div class="card-body">
+                        <h5 class="card-title" x-text="product.name"></h5>
+                        <p class="card-text fw-bold">
+                            € <span x-text="product.price"></span>
+                        </p>
+                        <p class="card-text text-muted" x-text="product.category"></p>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
 </div>
+
+@section Scripts
+{
+    <script>
+        document.addEventListener("alpine:init", () => {
+            productsList('@Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName');
+        });
+    </script>
+}

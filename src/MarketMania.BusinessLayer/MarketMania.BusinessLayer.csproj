@@ -9,16 +9,17 @@
     <PackageReference Include="AutoMapper" Version="15.0.1" />
     <PackageReference Include="FluentValidation" Version="12.0.0" />
     <PackageReference Include="MailKit" Version="4.13.0" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="9.7.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="9.9.0" />
     <PackageReference Include="OperationResultTools" Version="1.0.30" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.7" />
-    <PackageReference Include="TinyHelpers" Version="3.3.4" />
+    <PackageReference Include="TinyHelpers" Version="3.3.7" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MarketMania.Clients\MarketMania.Clients.csproj" />
     <ProjectReference Include="..\MarketMania.Contracts\MarketMania.Contracts.csproj" />
     <ProjectReference Include="..\MarketMania.DataAccessLayer\MarketMania.DataAccessLayer.csproj" />
+    <ProjectReference Include="..\MarketMania.Security\MarketMania.Security.csproj" />
     <ProjectReference Include="..\MarketMania.Shared\MarketMania.Shared.csproj" />
     <ProjectReference Include="..\MarketMania.StorageProviders\MarketMania.StorageProviders.csproj" />
   </ItemGroup>

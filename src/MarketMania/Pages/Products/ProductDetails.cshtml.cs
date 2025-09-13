@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace MarketMania.Pages;
+namespace MarketMania.Pages.Products;
 
-public class IndexModel : PageModel
+public class ProductDetailsModel : PageModel
 {
     public void OnGet()
     {

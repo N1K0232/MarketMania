@@ -76,5 +76,9 @@ public class Product
 
     public DateTime? PublishedAt { get; set; }
 
+    public IEnumerable<Image> Images { get; set; }
+
+    public IEnumerable<Rating> Ratings { get; set; }
+
     public IEnumerable<Specification> Specifications { get; set; }
 }

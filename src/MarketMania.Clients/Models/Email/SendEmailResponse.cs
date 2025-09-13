@@ -1,3 +1,3 @@
 ﻿namespace MarketMania.Clients.Models.Email;
 
-public record class SendEmailResponse(bool Succeed, string ErrorMessage = null);
+public record class SendEmailResponse(bool Succeed, string MessageId);

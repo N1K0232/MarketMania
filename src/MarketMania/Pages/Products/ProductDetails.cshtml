@@ -1,0 +1,15 @@
+﻿@page "/products/details/{id:guid}"
+
+@model ProductDetailsModel
+
+@{
+}
+
+<div x-data="productDetails" x-cloak x-init="get('@RouteData.Values["id"]')">
+</div>
+
+<script>
+    document.addEventListener("alpine:init", () => {
+        productDetails('@Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName');
+    });
+</script>

@@ -1,6 +1,6 @@
-﻿using System.Net.Http.Json;
-using MarketMania.Clients.Interfaces;
+﻿using MarketMania.Clients.Interfaces;
 using MarketMania.Clients.Models.Sentiment;
+using System.Net.Http.Json;
 
 namespace MarketMania.Clients;
 
@@ -8,7 +8,7 @@ public class SentimentAnalysisClient(HttpClient httpClient) : ISentimentAnalysis
 {
     public async Task<SentimentResponse> GetPredictionAsync(string text, CancellationToken cancellationToken = default)
     {
-        var response = await httpClient.GetFromJsonAsync<SentimentResponse>($"analyze/?text={text}", cancellationToken);
+        var response = await httpClient.GetFromJsonAsync<SentimentResponse>($"analyze/?text={text}", cancellationToken).ConfigureAwait(false);
         return response;
     }
 }

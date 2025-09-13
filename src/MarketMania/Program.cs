@@ -21,6 +21,7 @@ using MarketMania.Contracts;
 using MarketMania.DataAccessLayer;
 using MarketMania.Extensions;
 using MarketMania.Requirements;
+using MarketMania.Security;
 using MarketMania.Services;
 using MarketMania.Startup;
 using MarketMania.StorageProviders.Extensions;
@@ -170,17 +171,10 @@ builder.Services.AddSingleton<IPageService, PageService>();
 builder.Services.AddSingleton<IQRCodeGenerator, QRCodeHandlerGenerator>();
 
 builder.Services.AddEmailClient(builder.Configuration);
-builder.Services.AddSentimentApiClient(options =>
-{
-    options.SubscriptionKey = settings.SentimentSubscriptionKey;
-});
+builder.Services.AddSentimentApi(builder.Configuration);
+builder.Services.AddPdfSmith(builder.Configuration);
 
-builder.Services.AddPdfSmithClient(options =>
-{
-    options.SubscriptionKey = settings.PdfSmithSubscriptionKey;
-});
-
-builder.Services.AddAzureSql<ApplicationDbContext>(builder.Configuration.GetConnectionString("SqlConnection"));
+builder.Services.AddSqlServer<ApplicationDbContext>(builder.Configuration.GetConnectionString("SqlConnection"));
 builder.Services.AddScoped<IApplicationDbContext>(services => services.GetRequiredService<ApplicationDbContext>());
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
@@ -270,6 +264,7 @@ if (builder.Environment.IsProduction())
 }
 
 builder.Services.AddSingleton<IProductCodeGenerator, ProductCodeGenerator>();
+builder.Services.AddEncryption(builder.Configuration);
 
 var app = builder.Build();
 app.Environment.ApplicationName = settings.ApplicationName;
