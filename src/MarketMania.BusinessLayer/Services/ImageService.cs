@@ -4,6 +4,7 @@ using MarketMania.BusinessLayer.Services.Interfaces;
 using MarketMania.DataAccessLayer;
 using MarketMania.Shared.Models;
 using MarketMania.StorageProviders;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using MimeMapping;
 using OperationResults;
@@ -104,15 +105,17 @@ public class ImageService(IApplicationDbContext applicationDbContext, IStoragePr
         return streamFileContent;
     }
 
-    public async Task<Result<Image>> UploadAsync(Guid productId, Stream stream, string fileName, CancellationToken cancellationToken)
+    public async Task<Result<Image>> UploadAsync(Guid productId, IFormFile file, CancellationToken cancellationToken)
     {
+        using var stream = file.OpenReadStream();
         var product = await applicationDbContext.GetData<Entities.Product>(true).FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
+
         if (product is null)
         {
             return Result.Fail(FailureReasons.ItemNotFound, "Invalid product", $"No product found with id {productId}");
         }
 
-        var path = $"products\\{productId}\\{fileName}";
+        var path = $"products\\{productId}\\{file.FileName}";
         if (await storageProvider.ExistsAsync(path, cancellationToken))
         {
             return Result.Fail(FailureReasons.Conflict, "This image was already uploaded", "This image was already uploaded");
@@ -130,15 +133,12 @@ public class ImageService(IApplicationDbContext applicationDbContext, IStoragePr
         {
             ProductId = productId,
             Path = path,
-            ContentType = MimeUtility.GetMimeMapping(fileName),
+            ContentType = MimeUtility.GetMimeMapping(file.FileName),
             Length = stream.Length,
         };
 
-        await applicationDbContext.ExecuteTransactionAsync(async (token) =>
-        {
-            await applicationDbContext.InsertAsync(dbImage, token);
-            await applicationDbContext.SaveAsync(token);
-        }, cancellationToken);
+        await applicationDbContext.InsertAsync(dbImage, cancellationToken);
+        await applicationDbContext.SaveAsync(cancellationToken);
 
         var savedImage = mapper.Map<Image>(dbImage);
         return savedImage;

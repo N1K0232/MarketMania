@@ -1,4 +1,5 @@
 ﻿using MarketMania.Shared.Models;
+using Microsoft.AspNetCore.Http;
 using OperationResults;
 
 namespace MarketMania.BusinessLayer.Services.Interfaces;
@@ -13,5 +14,5 @@ public interface IImageService
 
     Task<Result<StreamFileContent>> ReadAsync(Guid productId, Guid imageId, CancellationToken cancellationToken);
 
-    Task<Result<Image>> UploadAsync(Guid productId, Stream stream, string fileName, CancellationToken cancellationToken);
+    Task<Result<Image>> UploadAsync(Guid productId, IFormFile file, CancellationToken cancellationToken);
 }
