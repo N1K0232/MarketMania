@@ -126,15 +126,11 @@
             }
         },
 
-        verifyEmail: async function () {
+        verifyEmail: async function (secret, token) {
             this.isBusy = true;
-            const parameters = new URLSearchParams(window.location.search);
 
             try {
-                const token = parameters.get('token');
-                const secret = parameters.get('secret');
-
-                const response = await verifyEmailAsync(token, secret, language);
+                const response = await verifyEmailAsync(secret, token, language);
                 const content = await response.json();
 
                 this.errorMessage = GetErrorMessage(response.status, content);
@@ -213,8 +209,8 @@ async function registerAsync(firstName, lastName, email, password, language) {
     return response;
 }
 
-async function verifyEmailAsync(token, secret, language) {
-    const response = await fetch(`/api/auth/verifyemail?token=${token}&secret=${secret}`, {
+async function verifyEmailAsync(secret, token, language) {
+    const response = await fetch(`/api/auth/verifyemail?secret=${secret}&token=${token}`, {
         method: "GET",
         headers: {
             "Accept-Language": language

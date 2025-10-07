@@ -4,5 +4,5 @@ namespace MarketMania.Authentication.Generators.Interfaces;
 
 public interface ITokenGenerator
 {
-    Task<string> GenerateTokenAsync(ApplicationUser user, CancellationToken cancellationToken = default);
+    Task<string> GenerateAccessTokenAsync(ApplicationUser user, CancellationToken cancellationToken = default);
 }

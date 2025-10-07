@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using MarketMania.Authentication.Entities;
 using MarketMania.Authentication.Generators.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -13,7 +14,7 @@ public class TokenGenerator(UserManager<ApplicationUser> userManager, IJwtBearer
     private const int RequestPerWindow = 5;
     private const int WindowMinutes = 1;
 
-    public async Task<string> GenerateTokenAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+    public async Task<string> GenerateAccessTokenAsync(ApplicationUser user, CancellationToken cancellationToken = default)
     {
         await userManager.UpdateSecurityStampAsync(user);
         var userRoles = await userManager.GetRolesAsync(user);

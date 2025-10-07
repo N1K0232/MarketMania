@@ -1,8 +1,13 @@
-﻿@page "/Accounts/VerifyEmail"
+﻿@page "/accounts/verifyemail"
 
 @model VerifyEmailModel
 
-<div class="auth" x-data="auth" x-cloak x-init="verifyEmail()">
+@{
+    string secret = HttpContext.Request.Query["secret"];
+    string token = HttpContext.Request.Query["token"];
+}
+
+<div class="auth" x-data="auth" x-cloak x-init="verifyEmail('@secret', '@token')">
     <div x-show="!isBusy || errorMessage.trim().length == 0">
         <p x-show="errorMessage.trim().length === 0" x-text="'Email successfully verified''"></p>
         <p x-show="errorMessage.trim().length > 0" x-text="errorMessage"></p>

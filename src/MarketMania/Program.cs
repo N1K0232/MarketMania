@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
@@ -13,6 +14,7 @@ using MarketMania.BusinessLayer.Extensions;
 using MarketMania.BusinessLayer.Generators;
 using MarketMania.BusinessLayer.Generators.Interfaces;
 using MarketMania.BusinessLayer.Providers;
+using MarketMania.BusinessLayer.Publishers;
 using MarketMania.BusinessLayer.Services;
 using MarketMania.BusinessLayer.Settings;
 using MarketMania.BusinessLayer.Validations;
@@ -40,6 +42,7 @@ using MinimalHelpers.Validation;
 using OperationResults.AspNetCore.Http;
 using Serilog;
 using SimpleAuthentication;
+using SimpleTransit;
 using TinyHelpers.AspNetCore.Extensions;
 using TinyHelpers.AspNetCore.OpenApi;
 using TinyHelpers.Extensions;
@@ -69,9 +72,8 @@ builder.Services.AddDefaultProblemDetails();
 builder.Services.AddHybridCache();
 builder.Services.AddRequestTimeouts();
 
-builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddSingleton<TimeZoneTimeProvider>();
-builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
+builder.Services.AddTimeZoneProvider();
+builder.Services.AddScoped(_ => RandomNumberGenerator.Create());
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -265,6 +267,11 @@ if (builder.Environment.IsProduction())
 
 builder.Services.AddSingleton<IProductCodeGenerator, ProductCodeGenerator>();
 builder.Services.AddEncryption(builder.Configuration);
+
+builder.Services.AddSimpleTransit(options =>
+{
+    options.RegisterServicesFromAssemblyContaining<UserRegistratedPublisher>();
+});
 
 var app = builder.Build();
 app.Environment.ApplicationName = settings.ApplicationName;

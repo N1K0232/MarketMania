@@ -16,5 +16,5 @@ public interface IIdentityService
 
     Task<Result<AuthResponse>> ValidateTwoFactorAsync(TwoFactorValidationRequest request, CancellationToken cancellationToken);
 
-    Task<Result> VerifyEmailAsync(string token, string secret, CancellationToken cancellationToken);
+    Task<Result> VerifyEmailAsync(string secret, string token, CancellationToken cancellationToken);
 }

@@ -4,22 +4,20 @@ using MarketMania.Authentication;
 using MarketMania.Authentication.DataProtection;
 using MarketMania.Authentication.Entities;
 using MarketMania.Authentication.Generators.Interfaces;
-using MarketMania.BusinessLayer.Resources;
 using MarketMania.BusinessLayer.Services.Interfaces;
-using MarketMania.Clients.Interfaces;
-using MarketMania.Clients.Models.Email;
-using MarketMania.Contracts;
 using MarketMania.Shared.Models;
+using MarketMania.Shared.Models.Notifications;
 using MarketMania.Shared.Models.Requests;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using OperationResults;
+using SimpleTransit;
 using TinyHelpers.Extensions;
 
 namespace MarketMania.BusinessLayer.Services;
 
-public class IdentityService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ITokenGenerator tokenGenerator, IQRCodeGenerator qrCodeGenerator, IDataProtectionService dataProtectionService, IPageService pageService, IEmailClient emailClient, IMapper mapper) : IIdentityService
+public class IdentityService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ITokenGenerator tokenGenerator, INotificationPublisher notificationPublisher, IQRCodeGenerator qrCodeGenerator, IDataProtectionService dataProtectionService, IMapper mapper) : IIdentityService
 {
     public async Task<Result<StreamFileContent>> GetQRCodeAsync(string token, CancellationToken cancellationToken)
     {
@@ -69,7 +67,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
             return Result.Fail(FailureReasons.ClientError, "Couldn't sign in", "Invalid email or password");
         }
 
-        var accessToken = await tokenGenerator.GenerateTokenAsync(user, cancellationToken);
+        var accessToken = await tokenGenerator.GenerateAccessTokenAsync(user, cancellationToken);
         return new AuthResponse(accessToken);
     }
 
@@ -92,27 +90,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
             return Result.Fail(FailureReasons.ClientError, "Couldn't register the user", detail);
         }
 
-        var token = await dataProtectionService.ProtectAsync(user.Id.ToString(), TimeSpan.FromMinutes(15), cancellationToken);
-        var secret = await userManager.GenerateEmailConfirmationTokenAsync(user);
-
-        var page = await pageService.GetPageAsync("/Accounts/VerifyEmail", new { token, secret }, cancellationToken);
-        if (!page.HasValue())
-        {
-            return Result.Fail(FailureReasons.ClientError, "Page not found", "Page not found");
-        }
-
-        var emailMessage = new EmailMessage
-        {
-            To = [request.Email],
-            TextContent = string.Format(Messages.VerifyEmail, page)
-        };
-
-        var response = await emailClient.SendAsync(emailMessage, cancellationToken);
-        if (!response.Succeed)
-        {
-            return Result.Fail(FailureReasons.ClientError, "Unable to complete registration");
-        }
-
+        await notificationPublisher.NotifyAsync(new UserRegistrated(request.Email), cancellationToken);
         return Result.Ok();
     }
 
@@ -141,17 +119,17 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
             return Result.Fail(FailureReasons.ClientError, "Invalid two factor code");
         }
 
-        var accessToken = await tokenGenerator.GenerateTokenAsync(user, cancellationToken);
+        var accessToken = await tokenGenerator.GenerateAccessTokenAsync(user, cancellationToken);
         return new AuthResponse(accessToken);
     }
 
-    public async Task<Result> VerifyEmailAsync(string token, string secret, CancellationToken cancellationToken)
+    public async Task<Result> VerifyEmailAsync(string secret, string token, CancellationToken cancellationToken)
     {
         ApplicationUser user;
 
         try
         {
-            var userId = await dataProtectionService.UnprotectAsync(token, cancellationToken);
+            var userId = await dataProtectionService.UnprotectAsync(secret, cancellationToken);
             user = await userManager.FindByIdAsync(userId);
         }
         catch
@@ -164,10 +142,10 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
             return Result.Fail(FailureReasons.ClientError);
         }
 
-        var result = await userManager.ConfirmEmailAsync(user, secret);
+        var result = await userManager.ConfirmEmailAsync(user, token);
         if (result.Succeeded)
         {
-            await userManager.AddToRoleAsync(user, RoleNames.User);
+            await notificationPublisher.NotifyAsync(new UserVerified(user.Email), cancellationToken);
             return Result.Ok();
         }
 
