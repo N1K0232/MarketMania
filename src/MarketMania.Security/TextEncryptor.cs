@@ -89,8 +89,8 @@ internal class TextEncryptor(IOptions<EncryptionOptions> optionsAccessor) : ITex
         var cipherBytes = new byte[cipherData.Length - pos];
         Buffer.BlockCopy(cipherData, pos, cipherBytes, 0, cipherBytes.Length);
 
-        await using var ms = new MemoryStream(cipherBytes);
-        await using var cryptoStream = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Read);
+        await using var memoryStream = new MemoryStream(cipherBytes);
+        await using var cryptoStream = new CryptoStream(memoryStream, aes.CreateDecryptor(), CryptoStreamMode.Read);
 
         using var reader = new StreamReader(cryptoStream, Encoding.UTF8);
         return await reader.ReadToEndAsync(cancellationToken);
