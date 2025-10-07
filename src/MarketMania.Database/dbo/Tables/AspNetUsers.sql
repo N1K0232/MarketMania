@@ -21,6 +21,26 @@
 );
 
 GO
+ALTER TABLE [dbo].[AspNetUsers]
+ADD CONSTRAINT [DF_AspNetUsers_Id] DEFAULT (NEWSEQUENTIALID()) FOR [Id];
+
+GO
+ALTER TABLE [dbo].[AspNetUsers]
+ADD CONSTRAINT [DF_AspNetUsers_EmailConfirmed] DEFAULT ((0)) FOR [EmailConfirmed];
+
+GO
+ALTER TABLE [dbo].[AspNetUsers]
+ADD CONSTRAINT [DF_AspNetUsers_PhoneNumberConfirmed] DEFAULT ((0)) FOR [PhoneNumberConfirmed];
+
+GO
+ALTER TABLE [dbo].[AspNetUsers]
+ADD CONSTRAINT [DF_AspNetUsers_TwoFactorEnabled] DEFAULT ((0)) FOR [TwoFactorEnabled];
+
+GO
+ALTER TABLE [dbo].[AspNetUsers]
+ADD CONSTRAINT [DF_AspNetUsers_LockoutEnabled] DEFAULT ((1)) FOR [LockoutEnabled];
+
+GO
 CREATE NONCLUSTERED INDEX [EmailIndex]
     ON [dbo].[AspNetUsers]([NormalizedEmail] ASC);
 
