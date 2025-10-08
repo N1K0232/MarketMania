@@ -16,7 +16,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
 {
     public static void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        var productsApiGroup = endpoints.MapGroup("/api/products");
+        var productsApiGroup = endpoints.MapGroup("/api/products").WithTags("Products");
 
         productsApiGroup.MapPost("{id:guid}/confirm", ConfirmAsync)
             .RequireAuthorization("Admin")

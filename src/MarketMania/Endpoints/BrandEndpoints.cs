@@ -11,7 +11,7 @@ public class BrandEndpoints : IEndpointRouteHandlerBuilder
 {
     public static void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        var brandsApiGroup = endpoints.MapGroup("/api/brands");
+        var brandsApiGroup = endpoints.MapGroup("/api/brands").WithTags("Brands");
 
         brandsApiGroup.MapDelete("{id:guid}", DeleteAsync)
             .RequireAuthorization("Admin")

@@ -11,30 +11,30 @@ public class SupplierEndpoints : IEndpointRouteHandlerBuilder
 {
     public static void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        var categoriesApiGroup = endpoints.MapGroup("/api/suppliers");
+        var suppliersApiGroup = endpoints.MapGroup("/api/suppliers").WithTags("Suppliers");
 
-        categoriesApiGroup.MapDelete("{id:guid}", DeleteAsync)
+        suppliersApiGroup.MapDelete("{id:guid}", DeleteAsync)
             .RequireAuthorization("Admin")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
             .WithName("DeleteSupplier")
             .WithOpenApi();
 
-        categoriesApiGroup.MapGet("{id:guid}", GetAsync)
+        suppliersApiGroup.MapGet("{id:guid}", GetAsync)
             .AllowAnonymous()
             .Produces<Supplier>()
             .Produces(StatusCodes.Status404NotFound)
             .WithName("GetSupplier")
             .WithOpenApi();
 
-        categoriesApiGroup.MapGet(string.Empty, GetListAsync)
+        suppliersApiGroup.MapGet(string.Empty, GetListAsync)
             .AllowAnonymous()
             .Produces<IEnumerable<Supplier>>()
             .Produces(StatusCodes.Status404NotFound)
             .WithName("GetSuppliers")
             .WithOpenApi();
 
-        categoriesApiGroup.MapPost(string.Empty, InsertAsync)
+        suppliersApiGroup.MapPost(string.Empty, InsertAsync)
             .RequireAuthorization("Admin")
             .WithValidation<SaveSupplierRequest>()
             .Produces<Supplier>(StatusCodes.Status201Created)
@@ -43,7 +43,7 @@ public class SupplierEndpoints : IEndpointRouteHandlerBuilder
             .WithName("InsertSupplier")
             .WithOpenApi();
 
-        categoriesApiGroup.MapPut("{id:guid}", UpdateAsync)
+        suppliersApiGroup.MapPut("{id:guid}", UpdateAsync)
             .RequireAuthorization("Admin")
             .WithValidation<SaveSupplierRequest>()
             .Produces(StatusCodes.Status204NoContent)

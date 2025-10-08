@@ -11,7 +11,7 @@ public class PromotionEndpoints : IEndpointRouteHandlerBuilder
 {
     public static void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        var promotionApiGroup = endpoints.MapGroup("/api/promotions");
+        var promotionApiGroup = endpoints.MapGroup("/api/promotions").WithTags("Promotions");
 
         promotionApiGroup.MapDelete("{id:guid}", DeleteAsync)
             .RequireAuthorization("Admin")

@@ -11,7 +11,7 @@ public class CategoryEndpoints : IEndpointRouteHandlerBuilder
 {
     public static void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        var categoriesApiGroup = endpoints.MapGroup("/api/categories");
+        var categoriesApiGroup = endpoints.MapGroup("/api/categories").WithTags("Categories");
 
         categoriesApiGroup.MapDelete("{id:guid}", DeleteAsync)
             .RequireAuthorization("Admin")

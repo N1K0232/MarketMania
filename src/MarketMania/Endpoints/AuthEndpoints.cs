@@ -12,7 +12,7 @@ public class AuthEndpoints : IEndpointRouteHandlerBuilder
 {
     public static void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        var authApiGroup = endpoints.MapGroup("/api/auth");
+        var authApiGroup = endpoints.MapGroup("/api/auth").WithTags("Auth");
 
         authApiGroup.MapGet("qrcode", GetQRCodeAsync)
             .AllowAnonymous()
@@ -99,9 +99,9 @@ public class AuthEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> VerifyEmailAsync(string token, string secret, IIdentityService identityService, HttpContext httpContext)
+    public static async Task<IResult> VerifyEmailAsync(string secret, string token, IIdentityService identityService, HttpContext httpContext)
     {
-        var result = await identityService.VerifyEmailAsync(token, secret, httpContext.RequestAborted);
+        var result = await identityService.VerifyEmailAsync(secret, token, httpContext.RequestAborted);
 
         var response = httpContext.CreateResponse(result);
         return response;
