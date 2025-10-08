@@ -118,20 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="VerifyEmail" xml:space="preserve">
-    <value>Good evening,
-
-Welcome to our website.
-Before you can continue, we need you to verify your account first.
-
-In order to do this, you should click on the link below.
-It will redirect you to the verification page and will automatically verify your email address.
----
-
-{0}
-
----
-Thank you for the attention.
-All the best.</value>
+    <value>&lt;p&gt;Please confirm your email by &lt;a href=\"{0}\"&gt;clicking here&lt;/a&gt;.&lt;/p&gt;</value>
     <comment>Used when the user registers for the first time and needs the email verification</comment>
   </data>
 </root>

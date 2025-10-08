@@ -61,20 +61,7 @@ namespace MarketMania.BusinessLayer.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Good evening,
-        ///
-        ///Welcome to our website.
-        ///Before you can continue, we need you to verify your account first.
-        ///
-        ///In order to do this, you should click on the link below.
-        ///It will redirect you to the verification page and will automatically verify your email address.
-        ///---
-        ///
-        ///{0}
-        ///
-        ///---
-        ///Thank you for the attention.
-        ///All the best..
+        ///   Looks up a localized string similar to &lt;p&gt;Please confirm your email by &lt;a href=\&quot;{0}\&quot;&gt;clicking here&lt;/a&gt;.&lt;/p&gt;.
         /// </summary>
         internal static string VerifyEmail {
             get {

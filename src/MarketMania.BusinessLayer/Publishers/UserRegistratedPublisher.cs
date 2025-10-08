@@ -1,4 +1,5 @@
-﻿using MarketMania.Authentication;
+﻿using System.Text;
+using MarketMania.Authentication;
 using MarketMania.Authentication.DataProtection;
 using MarketMania.Authentication.Entities;
 using MarketMania.BusinessLayer.Resources;
@@ -7,6 +8,7 @@ using MarketMania.Clients.Models.Email;
 using MarketMania.Contracts;
 using MarketMania.Shared.Models.Notifications;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using SimpleTransit;
 
 namespace MarketMania.BusinessLayer.Publishers;
@@ -19,7 +21,10 @@ public class UserRegistratedPublisher(UserManager<ApplicationUser> userManager, 
         var secret = await dataProtectionService.ProtectAsync(user.Id.ToString(), TimeSpan.FromMinutes(15), cancellationToken);
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
 
-        var page = await pageService.GetPageAsync("/accounts/verifyemail", new { secret, token }, cancellationToken);
+        var encodedSecret = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(secret));
+        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+        var endpoint = await pageService.GetEndpointAsync("verifyemail", new { secret = encodedSecret, token = encodedToken }, cancellationToken);
 
         var emailMessage = new EmailMessage
         {
@@ -27,7 +32,7 @@ public class UserRegistratedPublisher(UserManager<ApplicationUser> userManager, 
             SenderName = "Market Mania",
             To = [message.Email],
             Subject = "Verify your email",
-            TextContent = string.Format(Messages.VerifyEmail, page)
+            TextContent = string.Format(Messages.VerifyEmail, endpoint)
         };
 
         await emailClient.SendAsync(emailMessage, cancellationToken);

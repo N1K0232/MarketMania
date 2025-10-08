@@ -1,6 +1,8 @@
 ﻿using System.Net.Mime;
+using System.Net.Sockets;
+using System.Security.Cryptography;
+using System.Text;
 using AutoMapper;
-using MarketMania.Authentication;
 using MarketMania.Authentication.DataProtection;
 using MarketMania.Authentication.Entities;
 using MarketMania.Authentication.Generators.Interfaces;
@@ -11,6 +13,7 @@ using MarketMania.Shared.Models.Requests;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using OperationResults;
 using SimpleTransit;
 using TinyHelpers.Extensions;
@@ -28,9 +31,9 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
             var userId = await dataProtectionService.UnprotectAsync(token, cancellationToken);
             user = await userManager.FindByIdAsync(userId);
         }
-        catch
+        catch (CryptographicException ex)
         {
-            return Result.Fail(FailureReasons.ClientError);
+            return Result.Fail(FailureReasons.ClientError, "Unable to get the qr code", ex.Message);
         }
 
         if (user is null || (await userManager.GetAuthenticatorKeyAsync(user)).HasValue())
@@ -90,8 +93,15 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
             return Result.Fail(FailureReasons.ClientError, "Couldn't register the user", detail);
         }
 
-        await notificationPublisher.NotifyAsync(new UserRegistrated(request.Email), cancellationToken);
-        return Result.Ok();
+        try
+        {
+            await notificationPublisher.NotifyAsync(new UserRegistrated(request.Email), cancellationToken);
+            return Result.Ok();
+        }
+        catch (SocketException ex)
+        {
+            return Result.Fail(FailureReasons.ClientError, "Email not sent", ex.Message);
+        }
     }
 
     public async Task<Result<AuthResponse>> ValidateTwoFactorAsync(TwoFactorValidationRequest request, CancellationToken cancellationToken)
@@ -103,9 +113,9 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
             var userId = await dataProtectionService.UnprotectAsync(request.Token, cancellationToken);
             user = await userManager.FindByIdAsync(userId);
         }
-        catch
+        catch (CryptographicException ex)
         {
-            return Result.Fail(FailureReasons.ClientError);
+            return Result.Fail(FailureReasons.ClientError, "Unable to get the qr code", ex.Message);
         }
 
         if (user is null)
@@ -127,14 +137,17 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
     {
         ApplicationUser user;
 
+        var decodedSecret = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(secret));
+        var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
+
         try
         {
-            var userId = await dataProtectionService.UnprotectAsync(secret, cancellationToken);
+            var userId = await dataProtectionService.UnprotectAsync(decodedSecret, cancellationToken);
             user = await userManager.FindByIdAsync(userId);
         }
-        catch
+        catch (CryptographicException ex)
         {
-            return Result.Fail(FailureReasons.ClientError);
+            return Result.Fail(FailureReasons.ClientError, "Unable to verify your email", ex.Message);
         }
 
         if (user is null)
@@ -142,13 +155,20 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
             return Result.Fail(FailureReasons.ClientError);
         }
 
-        var result = await userManager.ConfirmEmailAsync(user, token);
-        if (result.Succeeded)
+        var result = await userManager.ConfirmEmailAsync(user, decodedToken);
+        if (!result.Succeeded)
+        {
+            return Result.Fail(FailureReasons.ClientError, "Unable to verify your email", "Email not verified");
+        }
+
+        try
         {
             await notificationPublisher.NotifyAsync(new UserVerified(user.Email), cancellationToken);
             return Result.Ok();
         }
-
-        return Result.Fail(FailureReasons.ClientError, "Unable to verify your email", "Email not verified");
+        catch (SocketException ex)
+        {
+            return Result.Fail(FailureReasons.ClientError, "Email not sent", ex.Message);
+        }
     }
 }

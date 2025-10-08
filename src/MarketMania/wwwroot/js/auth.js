@@ -124,26 +124,6 @@
             finally {
                 this.isBusy = false;
             }
-        },
-
-        verifyEmail: async function (secret, token) {
-            this.isBusy = true;
-
-            try {
-                const response = await verifyEmailAsync(secret, token, language);
-                const content = await response.json();
-
-                this.errorMessage = GetErrorMessage(response.status, content);
-                if (this.errorMessage == null) {
-                    window.location.href = '/';
-                }
-            }
-            catch (error) {
-                this.errorMessage = error.message;
-            }
-            finally {
-                this.isBusy = false;
-            }
         }
     }));
 }
@@ -204,17 +184,6 @@ async function registerAsync(firstName, lastName, email, password, language) {
             "Accept-Language": language
         },
         body: JSON.stringify(request)
-    });
-
-    return response;
-}
-
-async function verifyEmailAsync(secret, token, language) {
-    const response = await fetch(`/api/auth/verifyemail?secret=${secret}&token=${token}`, {
-        method: "GET",
-        headers: {
-            "Accept-Language": language
-        }
     });
 
     return response;
