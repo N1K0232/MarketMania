@@ -11,12 +11,15 @@ public class UserActiveHandler(UserManager<ApplicationUser> userManager) : Autho
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, UserActiveRequirement requirement)
     {
         var user = await userManager.GetUserAsync(context.User);
-        var lockedOut = await userManager.IsLockedOutAsync(user);
-
-        var securityStamp = context.User.GetClaimValue(ClaimTypes.SerialNumber);
-        if (!lockedOut && securityStamp == user.SecurityStamp)
+        if (user is not null)
         {
-            context.Succeed(requirement);
+            var lockedOut = await userManager.IsLockedOutAsync(user);
+            var securityStamp = context.User.GetClaimValue(ClaimTypes.SerialNumber);
+
+            if (!lockedOut && securityStamp == user.SecurityStamp)
+            {
+                context.Succeed(requirement);
+            }
         }
     }
 }

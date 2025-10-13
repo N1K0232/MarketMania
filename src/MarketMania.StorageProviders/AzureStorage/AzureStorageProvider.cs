@@ -10,40 +10,40 @@ public class AzureStorageProvider(AzureStorageSettings settings) : IStorageProvi
 
     public async Task SaveAsync(string path, Stream stream, CancellationToken cancellationToken)
     {
-        var blobClient = await GetBlobClientAsync(path, true, cancellationToken);
+        var blobClient = await GetBlobClientAsync(path, true, cancellationToken).ConfigureAwait(false);
         var headers = new BlobHttpHeaders
         {
             ContentType = MimeUtility.GetMimeMapping(path)
         };
 
         stream.Position = 0;
-        await blobClient.UploadAsync(stream, headers, cancellationToken: cancellationToken);
+        await blobClient.UploadAsync(stream, headers, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Stream> ReadAsync(string path, CancellationToken cancellationToken)
+    public async Task<Stream?> ReadAsync(string path, CancellationToken cancellationToken)
     {
-        var blobClient = await GetBlobClientAsync(path, cancellationToken: cancellationToken);
-        var blobExists = await blobClient.ExistsAsync(cancellationToken);
+        var blobClient = await GetBlobClientAsync(path, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var blobExists = await blobClient.ExistsAsync(cancellationToken).ConfigureAwait(false);
 
         if (!blobExists)
         {
             return null;
         }
 
-        var stream = await blobClient.OpenReadAsync(cancellationToken: cancellationToken);
+        var stream = await blobClient.OpenReadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
         return stream;
     }
 
     public async Task DeleteAsync(string path, CancellationToken cancellationToken)
     {
         var blobContainerClient = blobServiceClient.GetBlobContainerClient(settings.ContainerName);
-        await blobContainerClient.DeleteBlobIfExistsAsync(path, cancellationToken: cancellationToken);
+        await blobContainerClient.DeleteBlobIfExistsAsync(path, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<bool> ExistsAsync(string path, CancellationToken cancellationToken)
     {
-        var blobClient = await GetBlobClientAsync(path, cancellationToken: cancellationToken);
-        var exists = await blobClient.ExistsAsync(cancellationToken);
+        var blobClient = await GetBlobClientAsync(path, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var exists = await blobClient.ExistsAsync(cancellationToken).ConfigureAwait(false);
 
         return exists;
     }
@@ -54,7 +54,7 @@ public class AzureStorageProvider(AzureStorageSettings settings) : IStorageProvi
 
         if (createIfNotExists)
         {
-            await blobContainerClient.CreateIfNotExistsAsync(PublicAccessType.None, cancellationToken: cancellationToken);
+            await blobContainerClient.CreateIfNotExistsAsync(PublicAccessType.None, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         return blobContainerClient.GetBlobClient(path);

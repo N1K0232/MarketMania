@@ -7,27 +7,27 @@ public class FileSystemStorageProvider(FileSystemStorageSettings settings) : ISt
         var fullPath = Path.Combine(settings.StorageFolder, path);
         var directoryName = Path.GetDirectoryName(fullPath);
 
-        if (!Directory.Exists(directoryName))
+        if (!string.IsNullOrWhiteSpace(directoryName) && !Directory.Exists(directoryName))
         {
             Directory.CreateDirectory(directoryName);
         }
 
         using var fileStream = new FileStream(fullPath, FileMode.CreateNew, FileAccess.Write);
-        await stream.CopyToAsync(fileStream, cancellationToken);
+        await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
 
         fileStream.Close();
     }
 
-    public Task<Stream> ReadAsync(string path, CancellationToken cancellationToken)
+    public Task<Stream?> ReadAsync(string path, CancellationToken cancellationToken)
     {
         var fullPath = Path.Combine(settings.StorageFolder, path);
         if (!File.Exists(fullPath))
         {
-            return Task.FromResult<Stream>(null);
+            return Task.FromResult<Stream?>(null);
         }
 
         var stream = File.OpenRead(fullPath);
-        return Task.FromResult<Stream>(stream);
+        return Task.FromResult<Stream?>(stream);
     }
 
     public Task DeleteAsync(string path, CancellationToken cancellationToken)

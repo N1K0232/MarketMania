@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using MarketMania.Authentication.Entities;
 using MarketMania.Authentication.Generators.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -25,19 +24,19 @@ public class TokenGenerator(UserManager<ApplicationUser> userManager, IJwtBearer
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Email, user.Email!),
             new Claim(ClaimTypes.GivenName, user.FirstName),
             new Claim(ClaimTypes.Surname, user.LastName ?? string.Empty),
             new Claim(JwtRegisteredClaimNames.GivenName, user.FirstName),
             new Claim(JwtRegisteredClaimNames.FamilyName, user.LastName ?? string.Empty),
-            new Claim(ClaimTypes.SerialNumber, user.SecurityStamp),
+            new Claim(ClaimTypes.SerialNumber, user.SecurityStamp!),
             new Claim(CustomClaimTypes.PermitLimit, RequestPerWindow.ToString()),
             new Claim(CustomClaimTypes.Window, WindowMinutes.ToString())
         }
         .Union(userRoles.Select(role => new Claim(ClaimTypes.Role, role)))
         .Union(addresses.Select(address => new Claim(ClaimTypes.Dns, address.ToString())));
 
-        var token = await jwtBearerService.CreateTokenAsync(user.UserName, [.. claims]);
+        var token = await jwtBearerService.CreateTokenAsync(user.UserName!, [.. claims]);
         return token;
     }
 }

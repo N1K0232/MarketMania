@@ -76,7 +76,7 @@ public class EmailClient(IOptions<EmailSettings> emailSettingsOptions) : IEmailC
                 }
 
                 client.Dispose();
-                client = null;
+                client = null!;
 
                 disposed = true;
             }
