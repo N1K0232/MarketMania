@@ -21,9 +21,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         return Task.CompletedTask;
     }
 
-    public async ValueTask<T> GetAsync<T>(Guid id, CancellationToken cancellationToken) where T : BaseEntity
+    public async ValueTask<T?> GetAsync<T>(Guid id, CancellationToken cancellationToken) where T : BaseEntity
     {
-        var entity = await Set<T>().FindAsync([id], cancellationToken);
+        var entity = await Set<T>().FindAsync([id], cancellationToken).ConfigureAwait(false);
         return entity;
     }
 
@@ -36,7 +36,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public async Task InsertAsync<T>(T entity, CancellationToken cancellationToken) where T : BaseEntity
     {
         ArgumentNullException.ThrowIfNull(entity, nameof(entity));
-        await Set<T>().AddAsync(entity, cancellationToken);
+        await Set<T>().AddAsync(entity, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task SaveAsync(CancellationToken cancellationToken)
@@ -51,30 +51,23 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
             if (entry.State is EntityState.Modified)
             {
-                entity.LastModifiedAt = DateTime.UtcNow;
+                entity!.LastModifiedAt = DateTime.UtcNow;
             }
         }
 
-        await SaveChangesAsync(true, cancellationToken);
+        await SaveChangesAsync(true, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task ExecuteTransactionAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken)
     {
         var strategy = Database.CreateExecutionStrategy();
-        await strategy.ExecuteAsync(async (token) =>
-        {
-            await using var transaction = await Database.BeginTransactionAsync(token);
+        await strategy.ExecuteAsync((token) => ExecuteTransactionInternalAsync(action, token), cancellationToken).ConfigureAwait(false);
+    }
 
-            try
-            {
-                await action.Invoke(token);
-                await transaction.CommitAsync(token);
-            }
-            catch
-            {
-                await transaction.RollbackAsync(token);
-            }
-        }, cancellationToken);
+    public async Task<T> ExecuteTransactionAsync<T>(Func<CancellationToken, Task<T>> action, CancellationToken cancellationToken)
+    {
+        var strategy = Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync((token) => ExecuteTransactionInternalAsync(action, token), cancellationToken).ConfigureAwait(false);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -89,5 +82,39 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         base.OnModelCreating(builder);
+    }
+
+    private async Task ExecuteTransactionInternalAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken)
+    {
+        await using var transaction = await Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            await action.Invoke(cancellationToken).ConfigureAwait(false);
+            await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+            throw;
+        }
+    }
+
+    private async Task<T> ExecuteTransactionInternalAsync<T>(Func<CancellationToken, Task<T>> action, CancellationToken cancellationToken)
+    {
+        await using var transaction = await Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            var result = await action.Invoke(cancellationToken).ConfigureAwait(false);
+            await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+
+            return result;
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+            throw;
+        }
     }
 }

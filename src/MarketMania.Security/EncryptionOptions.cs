@@ -10,7 +10,7 @@ public class EncryptionOptions
 
     public int Iterations { get; set; } = 100_000;
 
-    public string HmacKey { get; set; }
+    public string HmacKey { get; set; } = null!;
 
     public HashAlgorithmName AlgorithmName { get; set; } = HashAlgorithmName.SHA256;
 }

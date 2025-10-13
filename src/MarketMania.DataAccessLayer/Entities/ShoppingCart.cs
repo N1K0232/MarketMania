@@ -7,7 +7,7 @@ public class ShoppingCart : BaseEntity
 {
     public Guid UserId { get; set; }
 
-    public virtual ApplicationUser User { get; set; }
+    public virtual ApplicationUser User { get; set; } = null!;
 
-    public virtual ICollection<ShoppingCartItem> ShoppingCartItems { get; set; }
+    public virtual ICollection<ShoppingCartItem> ShoppingCartItems { get; set; } = [];
 }

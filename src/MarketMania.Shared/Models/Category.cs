@@ -1,10 +1,3 @@
 ﻿namespace MarketMania.Shared.Models;
 
-public class Category
-{
-    public Guid Id { get; set; }
-
-    public string Name { get; set; }
-
-    public string Description { get; set; }
-}
+public record class Category(Guid Id, string Name, string Description);

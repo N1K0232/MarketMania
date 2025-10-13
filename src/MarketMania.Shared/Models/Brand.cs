@@ -1,10 +1,3 @@
 ﻿namespace MarketMania.Shared.Models;
 
-public class Brand
-{
-    public Guid Id { get; set; }
-
-    public string Name { get; set; }
-
-    public string City { get; set; }
-}
+public record class Brand(Guid Id, string Name, string City);

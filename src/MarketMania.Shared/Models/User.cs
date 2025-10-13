@@ -1,3 +1,3 @@
 ﻿namespace MarketMania.Shared.Models;
 
-public record class User(Guid Id, string FirstName, string LastName, string Email);
+public record class User(Guid Id, string FirstName, string LastName, string Email, string UserName);

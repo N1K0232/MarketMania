@@ -1,14 +1,3 @@
 ﻿namespace MarketMania.Shared.Models;
 
-public class Image
-{
-    public Guid Id { get; set; }
-
-    public string Path { get; set; }
-
-    public string ContentType { get; set; }
-
-    public long Length { get; set; }
-
-    public bool IsPublished { get; set; }
-}
+public record class Image(Guid Id, string Path, string ContentType, long Length, bool IsPublished);

@@ -1,10 +1,3 @@
 ﻿namespace MarketMania.Shared.Models;
 
-public class Supplier
-{
-    public Guid Id { get; set; }
-
-    public string Name { get; set; }
-
-    public string City { get; set; }
-}
+public record class Supplier(Guid Id, string Name, string City);

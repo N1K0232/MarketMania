@@ -12,13 +12,13 @@ public class Product : BaseEntity
 
     public Guid? PromotionId { get; set; }
 
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
-    public string Title { get; set; }
+    public string Title { get; set; } = null!;
 
-    public string Subtitle { get; set; }
+    public string? Subtitle { get; set; }
 
-    public string Description { get; set; }
+    public string Description { get; set; } = null!;
 
     public int Quantity { get; set; }
 
@@ -38,25 +38,25 @@ public class Product : BaseEntity
 
     public double? RatingsAverage { get; set; }
 
-    public string ImageUrl { get; set; }
+    public string? ImageUrl { get; set; }
 
     public int ImagesCount { get; set; }
 
-    public string Tags { get; set; }
+    public string[] Tags { get; set; } = null!;
 
-    public string SeoTitle { get; set; }
+    public string? SeoTitle { get; set; }
 
-    public string SeoDescription { get; set; }
+    public string? SeoDescription { get; set; }
 
     public bool IsFeatured { get; set; }
 
-    public string Barcode { get; set; }
+    public string Barcode { get; set; } = null!;
 
     public int? SKU { get; set; }
 
-    public string SKUCode { get; set; }
+    public string SKUCode { get; set; } = null!;
 
-    public string Code { get; set; }
+    public string Code { get; set; } = null!;
 
     public double Weight { get; set; }
 
@@ -66,9 +66,9 @@ public class Product : BaseEntity
 
     public double Length { get; set; }
 
-    public string SerialNumber { get; set; }
+    public string SerialNumber { get; set; } = null!;
 
-    public string WarehouseLocation { get; set; }
+    public string WarehouseLocation { get; set; } = null!;
 
     public int MinStockAlert { get; set; }
 
@@ -86,19 +86,19 @@ public class Product : BaseEntity
 
     public DateTime? PublishedAt { get; set; }
 
-    public virtual Brand Brand { get; set; }
+    public virtual Brand Brand { get; set; } = null!;
 
-    public virtual Category Category { get; set; }
+    public virtual Category Category { get; set; } = null!;
 
-    public virtual Supplier Supplier { get; set; }
+    public virtual Supplier Supplier { get; set; } = null!;
 
-    public virtual Promotion Promotion { get; set; }
+    public virtual Promotion? Promotion { get; set; }
 
-    public virtual ICollection<Image> Images { get; set; }
+    public virtual ICollection<Image> Images { get; set; } = [];
 
-    public virtual ICollection<Rating> Ratings { get; set; }
+    public virtual ICollection<Rating> Ratings { get; set; } = [];
 
-    public virtual ICollection<Specification> Specifications { get; set; }
+    public virtual ICollection<Specification> Specifications { get; set; } = [];
 
-    public virtual ICollection<ShoppingCartItem> ShoppingCartItems { get; set; }
+    public virtual ICollection<ShoppingCartItem> ShoppingCartItems { get; set; } = [];
 }

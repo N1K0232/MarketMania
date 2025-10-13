@@ -4,9 +4,9 @@ namespace MarketMania.DataAccessLayer.Entities;
 
 public class Supplier : BaseEntity
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
-    public string City { get; set; }
+    public string City { get; set; } = null!;
 
-    public virtual ICollection<Product> Products { get; set; }
+    public virtual ICollection<Product>? Products { get; set; }
 }

@@ -11,7 +11,7 @@ internal abstract class BaseEntityConfiguration<T> : IEntityTypeConfiguration<T>
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).ValueGeneratedOnAdd().HasDefaultValueSql("NEWSEQUENTIALID()");
 
-        builder.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("GETUTCDATE()");
+        builder.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("SYSUTCDATETIME()");
         builder.Property(e => e.LastModifiedAt).ValueGeneratedOnUpdate();
     }
 }
