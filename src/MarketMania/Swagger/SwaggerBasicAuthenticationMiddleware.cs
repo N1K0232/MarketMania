@@ -17,11 +17,11 @@ public class SwaggerBasicAuthenticationMiddleware(RequestDelegate next, IOptions
     {
         if (httpContext.IsSwaggerRequest() && swagger.UserName.HasValue() && swagger.Password.HasValue())
         {
-            string authenticationHeader = httpContext.Request.Headers[HeaderNames.Authorization];
+            string? authenticationHeader = httpContext.Request.Headers[HeaderNames.Authorization];
             if (authenticationHeader?.StartsWith("Basic ") ?? false)
             {
                 var header = AuthenticationHeaderValue.Parse(authenticationHeader);
-                var credentials = Encoding.UTF8.GetString(Convert.FromBase64String(header.Parameter)).Split(':', count: 2);
+                var credentials = Encoding.UTF8.GetString(Convert.FromBase64String(header.Parameter!)).Split(':', count: 2);
 
                 var userName = credentials.ElementAtOrDefault(0);
                 var password = credentials.ElementAtOrDefault(1);

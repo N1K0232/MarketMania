@@ -6,7 +6,7 @@ namespace MarketMania.Authentication.Generators;
 
 public class QRCodeHandlerGenerator(IWebHostEnvironment environment) : IQRCodeGenerator
 {
-    public Task<Stream> GenerateAsync(string email, string secret, CancellationToken cancellationToken = default)
+    public Task<Stream> GenerateAsync(string email, string? secret, CancellationToken cancellationToken = default)
     {
         var qrCodeUri = $"otpauth://totp/{Uri.EscapeDataString(environment.ApplicationName)}:{email}?secret={secret}&issuer={Uri.EscapeDataString(environment.ApplicationName)}";
         using var generator = new QRCodeGenerator();

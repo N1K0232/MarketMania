@@ -4,6 +4,7 @@
     [NormalizedUserName]         NVARCHAR (256)     NULL,
     [FirstName]                  NVARCHAR (256)     NOT NULL,
     [LastName]                   NVARCHAR (256)     NULL,
+    [EnableNotifications]        BIT                NOT NULL,
     [Email]                      NVARCHAR (256)     NULL,
     [NormalizedEmail]            NVARCHAR (256)     NULL,
     [EmailConfirmed]             BIT                NOT NULL,
@@ -23,6 +24,10 @@
 GO
 ALTER TABLE [dbo].[AspNetUsers]
 ADD CONSTRAINT [DF_AspNetUsers_Id] DEFAULT (NEWSEQUENTIALID()) FOR [Id];
+
+GO
+ALTER TABLE [dbo].[AspNetUsers]
+ADD CONSTRAINT [DF_AspNetUsers_EnableNotifications] DEFAULT ((0)) FOR [EnableNotifications];
 
 GO
 ALTER TABLE [dbo].[AspNetUsers]

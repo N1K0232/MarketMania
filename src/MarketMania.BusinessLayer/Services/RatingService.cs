@@ -47,7 +47,7 @@ public class RatingService(IApplicationDbContext applicationDbContext, ISentimen
         }
 
         var dbRating = await applicationDbContext.GetAsync<Entities.Rating>(ratingId, cancellationToken);
-        if (dbRating != null)
+        if (dbRating is null)
         {
             return Result.Fail(FailureReasons.ItemNotFound, "No rating found", $"No rating found with id {ratingId}");
         }
@@ -87,10 +87,10 @@ public class RatingService(IApplicationDbContext applicationDbContext, ISentimen
 
         var dbRating = mapper.Map<Entities.Rating>(request);
         dbRating.ProductId = productId;
-        dbRating.UserId = Guid.Parse(httpContextAccessor.HttpContext.User.GetClaimValue(ClaimTypes.NameIdentifier));
+        dbRating.UserId = Guid.Parse(httpContextAccessor.HttpContext?.User.GetClaimValue(ClaimTypes.NameIdentifier)!);
 
         var sentimentResponse = await sentimentAnalysisClient.GetPredictionAsync(request.Text, cancellationToken);
-        dbRating.SentimentScore = sentimentResponse.Score;
+        dbRating.SentimentScore = sentimentResponse!.Score;
 
         product.RatingsCount++;
         product.RatingsAverage = request.Score / product.RatingsCount;

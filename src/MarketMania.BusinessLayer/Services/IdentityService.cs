@@ -24,7 +24,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
 {
     public async Task<Result<StreamFileContent>> GetQRCodeAsync(string token, CancellationToken cancellationToken)
     {
-        ApplicationUser user;
+        ApplicationUser? user;
 
         try
         {
@@ -44,15 +44,19 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
         await userManager.ResetAuthenticatorKeyAsync(user);
         var secret = await userManager.GetAuthenticatorKeyAsync(user);
 
-        var stream = await qrCodeGenerator.GenerateAsync(user.Email, secret, cancellationToken);
+        var stream = await qrCodeGenerator.GenerateAsync(user.Email!, secret, cancellationToken);
         return new StreamFileContent(stream, MediaTypeNames.Image.Png);
     }
 
     public async Task<Result<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByEmailAsync(request.Email);
-        var signInResult = await signInManager.PasswordSignInAsync(user, request.Password, false, false);
+        if (user is null)
+        {
+            return Result.Fail(FailureReasons.ClientError, "Couldn't sign in", "Invalid email or password");
+        }
 
+        var signInResult = await signInManager.PasswordSignInAsync(user, request.Password, false, false);
         if (!signInResult.Succeeded)
         {
             if (signInResult.RequiresTwoFactor)
@@ -106,7 +110,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
 
     public async Task<Result<AuthResponse>> ValidateTwoFactorAsync(TwoFactorValidationRequest request, CancellationToken cancellationToken)
     {
-        ApplicationUser user;
+        ApplicationUser? user;
 
         try
         {
@@ -135,7 +139,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
 
     public async Task<Result> VerifyEmailAsync(string secret, string token, CancellationToken cancellationToken)
     {
-        ApplicationUser user;
+        ApplicationUser? user;
 
         var decodedSecret = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(secret));
         var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
@@ -163,7 +167,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
 
         try
         {
-            await notificationPublisher.NotifyAsync(new UserVerified(user.Email), cancellationToken);
+            await notificationPublisher.NotifyAsync(new UserVerified(user.Email!), cancellationToken);
             return Result.Ok();
         }
         catch (SocketException ex)

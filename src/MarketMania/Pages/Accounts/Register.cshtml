@@ -15,10 +15,18 @@
                 <input type="email" x-model="email" placeholder="Enter your email" required />
             </div>
             <div class="col-auto mt-2 input-box">
+                <input type="text" x-model="userName" placeholder="Enter your user name" />
+            </div>
+            <div class="col-auto mt-2 input-box">
                 <input type="password" x-model="password" placeholder="Enter the password for this account" required />
             </div>
             <div class="col-auto input-box mt-2">
                 <input type="password" x-model="confirmPassword" placeholder="Confirm password" />
+            </div>
+            <div class="mb-4 flex items-center gap-2">
+                <input type="checkbox" id="enableNotifications" x-model="enableNotifications"
+                       class="w-4 h-4" />
+                <label for="enableNotifications">Enable email notifications</label>
             </div>
             <div class="col-auto mt-3">
                 <button class="btn" type="submit" x-on:click="register()" x-bind:disabled="isBusy">Register</button>

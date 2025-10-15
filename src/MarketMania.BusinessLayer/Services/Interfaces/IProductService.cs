@@ -12,7 +12,7 @@ public interface IProductService
 
     Task<Result<Product>> GetAsync(Guid id, CancellationToken cancellationToken);
 
-    Task<Result<PaginatedList<Product>>> GetListAsync(string name, string brand, string category, int pageIndex, int itemsPerPage, string orderBy, CancellationToken cancellationToken);
+    Task<Result<PaginatedList<Product>>> GetListAsync(string? searchText, int pageIndex, int itemsPerPage, string orderBy, CancellationToken cancellationToken);
 
     Task<Result<Product>> InsertAsync(SaveProductRequest request, CancellationToken cancellationToken);
 

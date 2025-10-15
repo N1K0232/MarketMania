@@ -41,7 +41,7 @@ public static partial class RequestExtensions
 
     private static bool IsMobileRequest(this HttpRequest request)
     {
-        string userAgent = request.Headers[HeaderNames.UserAgent];
+        string? userAgent = request.Headers[HeaderNames.UserAgent];
         var isMobileBrowser = false;
 
         if (userAgent?.Length > 4 && (MobileBrowserRegex().IsMatch(userAgent) || MobileBrowserVersionRegex().IsMatch(userAgent.AsSpan(0, 4))))

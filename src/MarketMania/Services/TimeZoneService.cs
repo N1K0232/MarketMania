@@ -6,7 +6,7 @@ public class TimeZoneService(IHttpContextAccessor httpContextAccessor) : ITimeZo
 {
     public static readonly string HeaderKey = "x-time-zone";
 
-    public TimeZoneInfo GetTimeZone()
+    public TimeZoneInfo? GetTimeZone()
     {
         var timeZoneId = GetTimeZoneHeaderValueCore();
         if (timeZoneId is null || !TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId, out var timeZoneInfo))
@@ -17,10 +17,10 @@ public class TimeZoneService(IHttpContextAccessor httpContextAccessor) : ITimeZo
         return timeZoneInfo;
     }
 
-    public string GetTimeZoneHeaderValue()
+    public string? GetTimeZoneHeaderValue()
         => GetTimeZoneHeaderValueCore();
 
-    private string GetTimeZoneHeaderValueCore()
+    private string? GetTimeZoneHeaderValueCore()
     {
         if (httpContextAccessor.HttpContext?.Request?.Headers?.TryGetValue(HeaderKey, out var timeZone) ?? false)
         {

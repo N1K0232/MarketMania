@@ -39,10 +39,10 @@ public class PromotionService(IApplicationDbContext applicationDbContext, IMappe
         return promotion;
     }
 
-    public async Task<Result<IEnumerable<Promotion>>> GetListAsync(string name, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<Promotion>>> GetListAsync(string? name, CancellationToken cancellationToken)
     {
         var promotions = await applicationDbContext.GetData<Entities.Promotion>()
-            .WhereIf(name.HasValue(), p => p.Name.Contains(name))
+            .WhereIf(name.HasValue(), p => p.Name.Contains(name!))
             .ProjectTo<Promotion>(mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
 

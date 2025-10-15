@@ -68,7 +68,7 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
         return product;
     }
 
-    public async Task<Result<PaginatedList<Product>>> GetListAsync(string name, string brand, string category, int pageIndex, int itemsPerPage, string orderBy, CancellationToken cancellationToken)
+    public async Task<Result<PaginatedList<Product>>> GetListAsync(string? searchText, int pageIndex, int itemsPerPage, string orderBy, CancellationToken cancellationToken)
     {
         var query = applicationDbContext.GetData<Entities.Product>()
             .Include(p => p.Brand)
@@ -77,9 +77,7 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
             .Include(p => p.Images)
             .Include(p => p.Ratings)
             .Include(p => p.Specifications)
-            .WhereIf(name.HasValue(), p => p.Name.Contains(name))
-            .WhereIf(brand.HasValue(), p => p.Brand.Name.Contains(brand))
-            .WhereIf(category.HasValue(), p => p.Category.Name.Contains(category))
+            .WhereIf(searchText.HasValue(), p => p.Name.Contains(searchText!) || p.Brand.Name.Contains(searchText!) || p.Category.Name.Contains(searchText!))
             .Where(p => p.IsPublished);
 
         var totalCount = await query.CountAsync(cancellationToken);

@@ -10,7 +10,7 @@ public interface ISpecificationService
 
     Task<Result<Specification>> GetAsync(Guid productId, Guid specificationId, CancellationToken cancellationToken);
 
-    Task<Result<IEnumerable<Specification>>> GetListAsync(Guid productId, string name, CancellationToken cancellationToken);
+    Task<Result<IEnumerable<Specification>>> GetListAsync(Guid productId, string? name, CancellationToken cancellationToken);
 
     Task<Result<Specification>> InsertAsync(Guid productId, SaveSpecificationRequest request, CancellationToken cancellationToken);
 

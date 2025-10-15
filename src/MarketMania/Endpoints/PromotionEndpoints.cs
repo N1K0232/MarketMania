@@ -68,7 +68,7 @@ public class PromotionEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetListAsync(string name, IPromotionService promotionService, HttpContext httpContext)
+    public static async Task<IResult> GetListAsync(string? name, IPromotionService promotionService, HttpContext httpContext)
     {
         var result = await promotionService.GetListAsync(name, httpContext.RequestAborted);
 

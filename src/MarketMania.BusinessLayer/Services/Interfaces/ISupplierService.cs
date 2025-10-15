@@ -10,7 +10,7 @@ public interface ISupplierService
 
     Task<Result<Supplier>> GetAsync(Guid id, CancellationToken cancellationToken);
 
-    Task<Result<IEnumerable<Supplier>>> GetListAsync(string name, CancellationToken cancellationToken);
+    Task<Result<IEnumerable<Supplier>>> GetListAsync(string? name, CancellationToken cancellationToken);
 
     Task<Result<Supplier>> InsertAsync(SaveSupplierRequest request, CancellationToken cancellationToken);
 

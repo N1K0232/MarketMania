@@ -21,7 +21,7 @@ public static class AutomapperExtensions
 
             foreach (var profileType in profileTypes)
             {
-                profiles.Add((Profile)Activator.CreateInstance(profileType));
+                profiles.Add((Profile)Activator.CreateInstance(profileType)!);
             }
 
             options.AddProfiles(profiles);

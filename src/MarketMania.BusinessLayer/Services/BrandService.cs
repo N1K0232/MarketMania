@@ -39,10 +39,10 @@ public class BrandService(IApplicationDbContext applicationDbContext, IMapper ma
         return brand;
     }
 
-    public async Task<Result<IEnumerable<Brand>>> GetListAsync(string name, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<Brand>>> GetListAsync(string? name, CancellationToken cancellationToken)
     {
         var brands = await applicationDbContext.GetData<Entities.Brand>()
-            .WhereIf(name.HasValue(), b => b.Name.Contains(name))
+            .WhereIf(name.HasValue(), b => b.Name.Contains(name!))
             .ProjectTo<Brand>(mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
 

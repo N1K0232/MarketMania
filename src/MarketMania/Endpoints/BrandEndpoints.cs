@@ -68,7 +68,7 @@ public class BrandEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetListAsync(string name, IBrandService brandService, HttpContext httpContext)
+    public static async Task<IResult> GetListAsync(string? name, IBrandService brandService, HttpContext httpContext)
     {
         var result = await brandService.GetListAsync(name, httpContext.RequestAborted);
 

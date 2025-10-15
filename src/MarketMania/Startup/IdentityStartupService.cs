@@ -33,24 +33,24 @@ public class IdentityStartupService(IServiceProvider services, IConfiguration co
 
         var administratorUser = new ApplicationUser
         {
-            FirstName = administratorUserSection["FirstName"],
+            FirstName = administratorUserSection["FirstName"]!,
             Email = administratorUserSection["Email"],
             UserName = administratorUserSection["Email"]
         };
 
         var powerUser = new ApplicationUser
         {
-            FirstName = powerUserSection["FirstName"],
+            FirstName = powerUserSection["FirstName"]!,
             Email = powerUserSection["Email"],
             UserName = powerUserSection["Email"]
         };
 
-        await RegisterUserAsync(administratorUser, administratorUserSection["Password"], RoleNames.Administrator, RoleNames.User);
-        await RegisterUserAsync(powerUser, powerUserSection["Password"], RoleNames.PowerUser, RoleNames.User);
+        await RegisterUserAsync(administratorUser, administratorUserSection["Password"]!, RoleNames.Administrator, RoleNames.User);
+        await RegisterUserAsync(powerUser, powerUserSection["Password"]!, RoleNames.PowerUser, RoleNames.User);
 
         async Task RegisterUserAsync(ApplicationUser user, string password, params string[] roles)
         {
-            var dbUser = await userManager.FindByNameAsync(user.UserName);
+            var dbUser = await userManager.FindByNameAsync(user.UserName!);
             if (dbUser is null)
             {
                 await userManager.CreateAsync(user, password);

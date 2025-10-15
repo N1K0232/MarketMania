@@ -192,9 +192,9 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetListAsync(IProductService productService, HttpContext httpContext, string name, string brand, string category, int pageIndex = 0, int itemsPerPage = 50, string orderBy = "Name, Price")
+    public static async Task<IResult> GetListAsync(IProductService productService, HttpContext httpContext, string? searchText = null, int pageIndex = 0, int itemsPerPage = 50, string orderBy = "Name, Price")
     {
-        var result = await productService.GetListAsync(name, brand, category, pageIndex, itemsPerPage, orderBy, httpContext.RequestAborted);
+        var result = await productService.GetListAsync(searchText, pageIndex, itemsPerPage, orderBy, httpContext.RequestAborted);
 
         var response = httpContext.CreateResponse(result);
         return response;

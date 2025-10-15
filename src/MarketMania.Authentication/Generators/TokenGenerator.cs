@@ -15,11 +15,11 @@ public class TokenGenerator(UserManager<ApplicationUser> userManager, IJwtBearer
 
     public async Task<string> GenerateAccessTokenAsync(ApplicationUser user, CancellationToken cancellationToken = default)
     {
-        await userManager.UpdateSecurityStampAsync(user);
-        var userRoles = await userManager.GetRolesAsync(user);
+        await userManager.UpdateSecurityStampAsync(user).ConfigureAwait(false);
+        var userRoles = await userManager.GetRolesAsync(user).ConfigureAwait(false);
 
         var hostName = Dns.GetHostName();
-        var addresses = await Dns.GetHostAddressesAsync(hostName, cancellationToken);
+        var addresses = await Dns.GetHostAddressesAsync(hostName, cancellationToken).ConfigureAwait(false);
 
         var claims = new List<Claim>
         {
@@ -36,7 +36,7 @@ public class TokenGenerator(UserManager<ApplicationUser> userManager, IJwtBearer
         .Union(userRoles.Select(role => new Claim(ClaimTypes.Role, role)))
         .Union(addresses.Select(address => new Claim(ClaimTypes.Dns, address.ToString())));
 
-        var token = await jwtBearerService.CreateTokenAsync(user.UserName!, [.. claims]);
+        var token = await jwtBearerService.CreateTokenAsync(user.UserName!, [.. claims]).ConfigureAwait(false);
         return token;
     }
 }

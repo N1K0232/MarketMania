@@ -39,10 +39,10 @@ public class CategoryService(IApplicationDbContext applicationDbContext, IMapper
         return category;
     }
 
-    public async Task<Result<IEnumerable<Category>>> GetListAsync(string name, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<Category>>> GetListAsync(string? name, CancellationToken cancellationToken)
     {
         var categories = await applicationDbContext.GetData<Entities.Category>()
-            .WhereIf(name.HasValue(), c => c.Name.Contains(name))
+            .WhereIf(name.HasValue(), c => c.Name.Contains(name!))
             .ProjectTo<Category>(mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
 

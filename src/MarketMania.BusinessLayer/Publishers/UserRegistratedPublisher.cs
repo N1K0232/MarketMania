@@ -17,14 +17,14 @@ public class UserRegistratedPublisher(UserManager<ApplicationUser> userManager, 
 {
     public async Task HandleAsync(UserRegistrated message, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByEmailAsync(message.Email);
-        var secret = await dataProtectionService.ProtectAsync(user.Id.ToString(), TimeSpan.FromMinutes(15), cancellationToken);
-        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        var user = await userManager.FindByEmailAsync(message.Email).ConfigureAwait(false);
+        var secret = await dataProtectionService.ProtectAsync(user!.Id.ToString(), TimeSpan.FromMinutes(15), cancellationToken).ConfigureAwait(false);
+        var token = await userManager.GenerateEmailConfirmationTokenAsync(user).ConfigureAwait(false);
 
         var encodedSecret = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(secret));
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-        var endpoint = await pageService.GetEndpointAsync("verifyemail", new { secret = encodedSecret, token = encodedToken }, cancellationToken);
+        var endpoint = await pageService.GetEndpointAsync("verifyemail", new { secret = encodedSecret, token = encodedToken }, cancellationToken).ConfigureAwait(false);
 
         var emailMessage = new EmailMessage
         {
@@ -35,13 +35,13 @@ public class UserRegistratedPublisher(UserManager<ApplicationUser> userManager, 
             TextContent = string.Format(Messages.VerifyEmail, endpoint)
         };
 
-        await emailClient.SendAsync(emailMessage, cancellationToken);
+        await emailClient.SendAsync(emailMessage, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task HandleAsync(UserVerified message, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByEmailAsync(message.Email);
-        await userManager.AddToRoleAsync(user, RoleNames.User);
+        var user = await userManager.FindByEmailAsync(message.Email).ConfigureAwait(false);
+        await userManager.AddToRoleAsync(user!, RoleNames.User).ConfigureAwait(false);
 
         var emailMessage = new EmailMessage
         {
@@ -52,6 +52,6 @@ public class UserRegistratedPublisher(UserManager<ApplicationUser> userManager, 
             TextContent = "You have successfully verified"
         };
 
-        await emailClient.SendAsync(emailMessage, cancellationToken);
+        await emailClient.SendAsync(emailMessage, cancellationToken).ConfigureAwait(false);
     }
 }

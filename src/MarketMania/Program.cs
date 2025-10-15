@@ -13,7 +13,6 @@ using MarketMania.Authentication.Generators.Interfaces;
 using MarketMania.BusinessLayer.Extensions;
 using MarketMania.BusinessLayer.Generators;
 using MarketMania.BusinessLayer.Generators.Interfaces;
-using MarketMania.BusinessLayer.Providers;
 using MarketMania.BusinessLayer.Publishers;
 using MarketMania.BusinessLayer.Services;
 using MarketMania.BusinessLayer.Settings;
@@ -57,8 +56,8 @@ builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
     loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration);
 });
 
-var settings = builder.Services.ConfigureAndGet<AppSettings>(builder.Configuration, nameof(AppSettings));
-var swagger = builder.Services.ConfigureAndGet<SwaggerSettings>(builder.Configuration, nameof(SwaggerSettings));
+var settings = builder.Services.ConfigureAndGet<AppSettings>(builder.Configuration, nameof(AppSettings)) ?? new AppSettings();
+var swagger = builder.Services.ConfigureAndGet<SwaggerSettings>(builder.Configuration, nameof(SwaggerSettings)) ?? new SwaggerSettings();
 
 builder.Services.AddRazorPages();
 builder.Services.AddHttpContextAccessor();

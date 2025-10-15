@@ -3,8 +3,10 @@
         firstName: '',
         lastName: '',
         email: '',
+        userName: null,
         password: '',
         confirmPassword: '',
+        enableNotifications: false,
         qrCodeSrc: '',
         twoFactorCode: '',
         isPersistent: false,
@@ -88,7 +90,7 @@
             this.isBusy = true;
 
             try {
-                const response = await registerAsync(this.firstName, this.lastName, this.email, this.password, language);
+                const response = await registerAsync(this.firstName, this.lastName, this.email, this.password, this.userName, this.enableNotifications, language);
                 const content = await response.json();
 
                 this.errorMessage = GetErrorMessage(response.status, content);
@@ -169,12 +171,14 @@ async function logoutAsync(language) {
     return response;
 }
 
-async function registerAsync(firstName, lastName, email, password, language) {
+async function registerAsync(firstName, lastName, email, password, userName, enableNotifications, language) {
     const request = {
         firstName: firstName,
         lastName: lastName,
         email: email,
-        password: password
+        password: password,
+        userName: userName,
+        enableNotifications: enableNotifications
     };
 
     const response = await fetch('/api/auth/register', {

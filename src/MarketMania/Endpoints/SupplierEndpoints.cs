@@ -68,7 +68,7 @@ public class SupplierEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetListAsync(string name, ISupplierService supplierService, HttpContext httpContext)
+    public static async Task<IResult> GetListAsync(string? name, ISupplierService supplierService, HttpContext httpContext)
     {
         var result = await supplierService.GetListAsync(name, httpContext.RequestAborted);
 

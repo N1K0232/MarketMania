@@ -10,7 +10,7 @@ public interface IPromotionService
 
     Task<Result<Promotion>> GetAsync(Guid id, CancellationToken cancellationToken);
 
-    Task<Result<IEnumerable<Promotion>>> GetListAsync(string name, CancellationToken cancellationToken);
+    Task<Result<IEnumerable<Promotion>>> GetListAsync(string? name, CancellationToken cancellationToken);
 
     Task<Result<Promotion>> InsertAsync(SavePromotionRequest request, CancellationToken cancellationToken);
 

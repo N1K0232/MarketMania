@@ -6,6 +6,7 @@ using MarketMania.Shared.Models;
 using MarketMania.Shared.Models.Requests;
 using Microsoft.EntityFrameworkCore;
 using OperationResults;
+using TinyHelpers.Extensions;
 using Entities = MarketMania.DataAccessLayer.Entities;
 
 namespace MarketMania.BusinessLayer.Services;
@@ -53,10 +54,11 @@ public class SpecificationService(IApplicationDbContext applicationDbContext, IM
         return specification;
     }
 
-    public async Task<Result<IEnumerable<Specification>>> GetListAsync(Guid productId, string name, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<Specification>>> GetListAsync(Guid productId, string? name, CancellationToken cancellationToken)
     {
         var specifications = await applicationDbContext.GetData<Entities.Specification>()
             .Where(s => s.ProductId == productId)
+            .WhereIf(name.HasValue(), s => s.Name.Contains(name!))
             .ProjectTo<Specification>(mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
 

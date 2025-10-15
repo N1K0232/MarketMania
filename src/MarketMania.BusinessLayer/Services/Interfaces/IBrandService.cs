@@ -10,7 +10,7 @@ public interface IBrandService
 
     Task<Result<Brand>> GetAsync(Guid id, CancellationToken cancellationToken);
 
-    Task<Result<IEnumerable<Brand>>> GetListAsync(string name, CancellationToken cancellationToken);
+    Task<Result<IEnumerable<Brand>>> GetListAsync(string? name, CancellationToken cancellationToken);
 
     Task<Result<Brand>> InsertAsync(SaveBrandRequest request, CancellationToken cancellationToken);
 

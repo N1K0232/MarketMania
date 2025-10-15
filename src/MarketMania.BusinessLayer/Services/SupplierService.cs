@@ -39,10 +39,10 @@ public class SupplierService(IApplicationDbContext applicationDbContext, IMapper
         return supplier;
     }
 
-    public async Task<Result<IEnumerable<Supplier>>> GetListAsync(string name, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<Supplier>>> GetListAsync(string? name, CancellationToken cancellationToken)
     {
         var suppliers = await applicationDbContext.GetData<Entities.Supplier>()
-            .WhereIf(name.HasValue(), s => s.Name.Contains(name))
+            .WhereIf(name.HasValue(), s => s.Name.Contains(name!))
             .ProjectTo<Supplier>(mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
 
