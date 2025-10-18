@@ -32,7 +32,7 @@ ALTER TABLE [dbo].[Ratings]
 
 GO
 ALTER TABLE [dbo].[Ratings]
-    ADD CONSTRAINT [DF_Ratings_CreatedAt] DEFAULT (GETUTCDATE()) FOR [CreatedAt];
+    ADD CONSTRAINT [DF_Ratings_CreatedAt] DEFAULT (SYSUTCDATETIME()) FOR [CreatedAt];
 
 GO
 ALTER TABLE [dbo].[Ratings]

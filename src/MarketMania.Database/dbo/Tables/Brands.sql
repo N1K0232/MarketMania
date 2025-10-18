@@ -17,4 +17,4 @@ ALTER TABLE [dbo].[Brands]
 
 GO
 ALTER TABLE [dbo].[Brands]
-    ADD CONSTRAINT [DF_Brands_CreatedAt] DEFAULT (GETUTCDATE()) FOR [CreatedAt];
+    ADD CONSTRAINT [DF_Brands_CreatedAt] DEFAULT (SYSUTCDATETIME()) FOR [CreatedAt];

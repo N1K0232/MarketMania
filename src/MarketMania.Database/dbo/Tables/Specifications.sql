@@ -23,7 +23,7 @@ ALTER TABLE [dbo].[Specifications]
 
 GO
 ALTER TABLE [dbo].[Specifications]
-    ADD CONSTRAINT [DF_Specifications_CreatedAt] DEFAULT (GETUTCDATE()) FOR [CreatedAt];
+    ADD CONSTRAINT [DF_Specifications_CreatedAt] DEFAULT (SYSUTCDATETIME()) FOR [CreatedAt];
 
 GO
 CREATE NONCLUSTERED INDEX [IX_Specifications_Name]

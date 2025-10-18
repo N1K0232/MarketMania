@@ -17,4 +17,4 @@ ALTER TABLE [dbo].[Suppliers]
 
 GO
 ALTER TABLE [dbo].[Suppliers]
-    ADD CONSTRAINT [DF_Suppliers_CreatedAt] DEFAULT (GETUTCDATE()) FOR [CreatedAt];
+    ADD CONSTRAINT [DF_Suppliers_CreatedAt] DEFAULT (SYSUTCDATETIME()) FOR [CreatedAt];

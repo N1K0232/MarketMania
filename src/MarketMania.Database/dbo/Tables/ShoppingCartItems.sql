@@ -29,7 +29,7 @@ ALTER TABLE [dbo].[ShoppingCartItems]
 
 GO
 ALTER TABLE [dbo].[ShoppingCartItems]
-    ADD CONSTRAINT [DF_ShoppingCartItems_CreatedAt] DEFAULT (GETUTCDATE()) FOR [CreatedAt];
+    ADD CONSTRAINT [DF_ShoppingCartItems_CreatedAt] DEFAULT (SYSUTCDATETIME()) FOR [CreatedAt];
 
 GO
 CREATE UNIQUE NONCLUSTERED INDEX [IX_ShoppingCart_Product]

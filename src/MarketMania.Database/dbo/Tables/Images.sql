@@ -24,7 +24,7 @@ ALTER TABLE [dbo].[Images]
 
 GO
 ALTER TABLE [dbo].[Images]
-    ADD CONSTRAINT [DF_Images_CreatedAt] DEFAULT (GETUTCDATE()) FOR [CreatedAt];
+    ADD CONSTRAINT [DF_Images_CreatedAt] DEFAULT (SYSUTCDATETIME()) FOR [CreatedAt];
 
 GO
 ALTER TABLE [dbo].[Images]

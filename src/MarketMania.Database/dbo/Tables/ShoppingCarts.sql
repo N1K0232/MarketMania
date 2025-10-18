@@ -21,4 +21,4 @@ ALTER TABLE [dbo].[ShoppingCarts]
 
 GO
 ALTER TABLE [dbo].[ShoppingCarts]
-	ADD CONSTRAINT [DF_ShoppingCarts_CreatedAt] DEFAULT (GETUTCDATE()) FOR [CreatedAt];
+	ADD CONSTRAINT [DF_ShoppingCarts_CreatedAt] DEFAULT (SYSUTCDATETIME()) FOR [CreatedAt];

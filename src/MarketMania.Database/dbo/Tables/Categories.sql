@@ -17,4 +17,4 @@ ALTER TABLE [dbo].[Categories]
 
 GO
 ALTER TABLE [dbo].[Categories]
-    ADD CONSTRAINT [DF_Categories_CreatedAt] DEFAULT (GETUTCDATE()) FOR [CreatedAt]
+    ADD CONSTRAINT [DF_Categories_CreatedAt] DEFAULT (SYSUTCDATETIME()) FOR [CreatedAt]

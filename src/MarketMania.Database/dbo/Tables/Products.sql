@@ -11,6 +11,7 @@
     [Description]           NVARCHAR (4000)         NOT NULL,
     [Quantity]              INTEGER                 NOT NULL,
     [IsAvailable]           BIT                     NOT NULL,
+    [NotifyAvailability]    BIT                     NOT NULL,
     [Price]                 DECIMAL (18, 2)         NOT NULL,
     [ShippingCost]          DECIMAL (5, 2)          NULL,
     [DiscountPercentage]    FLOAT                   NULL,
@@ -34,9 +35,10 @@
     [Length]                FLOAT                   NOT NULL,
     [SerialNumber]          VARCHAR (50)            NOT NULL,
     [WarehouseLocation]     NVARCHAR (100)          NOT NULL,
-    [MinStockAlert]         INTEGER                 NOT NULL,
+    [MinimumStockAlert]     INTEGER                 NOT NULL,
     [IsBackorderable]       BIT                     NOT NULL,
     [RestockDate]           DATETIME2               NULL,
+    [NotifyRestockDate]     BIT                     NOT NULL,
     [ViewCount]             INTEGER                 NOT NULL,
     [PurchaseCount]         INTEGER                 NOT NULL,
     [LastPurchasedAt]       DATETIME2               NULL, 
@@ -76,7 +78,7 @@ ALTER TABLE [dbo].[Products]
 
 GO
 ALTER TABLE [dbo].[Products]
-    ADD CONSTRAINT [DF_Products_CreatedAt] DEFAULT (GETUTCDATE()) FOR [CreatedAt];
+    ADD CONSTRAINT [DF_Products_CreatedAt] DEFAULT (SYSUTCDATETIME()) FOR [CreatedAt];
 
 GO
 ALTER TABLE [dbo].[Products]
@@ -89,6 +91,14 @@ ALTER TABLE [dbo].[Products]
 GO
 ALTER TABLE [dbo].[Products]
     ADD CONSTRAINT [DF_Products_IsAvailable] DEFAULT ((1)) FOR [IsAvailable];
+
+GO
+ALTER TABLE [dbo].[Products]
+    ADD CONSTRAINT [DF_Products_NotifyAvailability] DEFAULT ((1)) FOR [NotifyAvailability];
+
+GO
+ALTER TABLE [dbo].[Products]
+    ADD CONSTRAINT [DF_Products_NotifyRestockDate] DEFAULT ((1)) FOR [NotifyRestockDate];
 
 GO
 CREATE NONCLUSTERED INDEX [IX_Products_Name]

@@ -20,7 +20,7 @@ ALTER TABLE [dbo].[Promotions]
 
 GO
 ALTER TABLE [dbo].[Promotions]
-    ADD CONSTRAINT [DF_Promotions_CreatedAt] DEFAULT (GETUTCDATE()) FOR [CreatedAt];
+    ADD CONSTRAINT [DF_Promotions_CreatedAt] DEFAULT (SYSUTCDATETIME()) FOR [CreatedAt];
 
 GO
 ALTER TABLE [dbo].[Promotions]
