@@ -11,6 +11,8 @@ public abstract class AuthenticationDbContext(DbContextOptions options) : Identi
 {
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
+    public DbSet<Subscription> Subscriptions { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -41,6 +43,19 @@ public abstract class AuthenticationDbContext(DbContextOptions options) : Identi
 
             b.Property(k => k.FriendlyName).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
             b.Property(k => k.Xml).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
+        });
+
+        builder.Entity<Subscription>(b =>
+        {
+            b.ToTable("Subscriptions");
+            b.HasKey(s => s.Id);
+            b.Property(s => s.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
+
+            b.Property(s => s.UserName).HasMaxLength(255).IsRequired();
+            b.Property(s => s.ApiKey).HasMaxLength(512).IsRequired();
+
+            b.HasIndex(s => s.UserName, "IX_Subscriptions").IsUnique();
+            b.HasIndex(s => s.ApiKey, "IX_Subscriptions_ApiKey").IsUnique();
         });
     }
 }

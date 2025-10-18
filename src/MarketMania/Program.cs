@@ -10,9 +10,8 @@ using MarketMania.Authentication.DataProtection;
 using MarketMania.Authentication.Entities;
 using MarketMania.Authentication.Generators;
 using MarketMania.Authentication.Generators.Interfaces;
+using MarketMania.Authentication.Validators;
 using MarketMania.BusinessLayer.Extensions;
-using MarketMania.BusinessLayer.Generators;
-using MarketMania.BusinessLayer.Generators.Interfaces;
 using MarketMania.BusinessLayer.Publishers;
 using MarketMania.BusinessLayer.Services;
 using MarketMania.BusinessLayer.Settings;
@@ -20,6 +19,8 @@ using MarketMania.BusinessLayer.Validations;
 using MarketMania.Clients.Extensions;
 using MarketMania.Contracts;
 using MarketMania.DataAccessLayer;
+using MarketMania.DataAccessLayer.Stores;
+using MarketMania.DataAccessLayer.Stores.Interfaces;
 using MarketMania.Extensions;
 using MarketMania.Requirements;
 using MarketMania.Security;
@@ -41,6 +42,7 @@ using MinimalHelpers.Validation;
 using OperationResults.AspNetCore.Http;
 using Serilog;
 using SimpleAuthentication;
+using SimpleAuthentication.ApiKey;
 using SimpleTransit;
 using TinyHelpers.AspNetCore.Extensions;
 using TinyHelpers.AspNetCore.OpenApi;
@@ -208,6 +210,9 @@ builder.Services.AddAuthentication(options =>
     options.Cookie.SameSite = SameSiteMode.Strict;
 });
 
+builder.Services.AddScoped<AuthenticationDbContext>(services => services.GetRequiredService<ApplicationDbContext>());
+builder.Services.AddTransient<IApiKeyValidator, SubscriptionValidator>();
+
 builder.Services.AddScoped<IAuthorizationHandler, UserActiveHandler>();
 builder.Services.AddAuthorization(options =>
 {
@@ -264,7 +269,7 @@ if (builder.Environment.IsProduction())
     builder.Services.AddOpenTelemetry().UseAzureMonitor();
 }
 
-builder.Services.AddSingleton<IProductCodeGenerator, ProductCodeGenerator>();
+builder.Services.AddScoped<IProductStore, ProductStore>();
 builder.Services.AddEncryption(builder.Configuration);
 
 builder.Services.AddSimpleTransit(options =>
