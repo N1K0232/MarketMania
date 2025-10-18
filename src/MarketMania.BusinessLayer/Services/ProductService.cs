@@ -1,8 +1,8 @@
 ﻿using System.Linq.Dynamic.Core;
 using System.Linq.Dynamic.Core.Exceptions;
 using AutoMapper;
-using MarketMania.BusinessLayer.Generators.Interfaces;
 using MarketMania.DataAccessLayer;
+using MarketMania.DataAccessLayer.Stores.Interfaces;
 using MarketMania.Shared.Models;
 using MarketMania.Shared.Models.Requests;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +12,7 @@ using Entities = MarketMania.DataAccessLayer.Entities;
 
 namespace MarketMania.BusinessLayer.Services;
 
-public class ProductService(IApplicationDbContext applicationDbContext, IProductCodeGenerator productCodeGenerator, TimeProvider timeProvider, IMapper mapper) : IProductService
+public class ProductService(IApplicationDbContext applicationDbContext, IProductStore productStore, TimeProvider timeProvider, IMapper mapper) : IProductService
 {
     public async Task<Result> ConfirmAsync(Guid id, CancellationToken cancellationToken)
     {
@@ -103,11 +103,11 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
         var dbProduct = mapper.Map<Entities.Product>(request);
         dbProduct.TotalPrice = CalculateTotalPrice(request);
 
-        dbProduct.Barcode = await GenerateBarCodeAsync(cancellationToken);
-        dbProduct.Code = await GenerateCodeAsync(cancellationToken);
+        await productStore.GenerateBarcodeAsync(dbProduct, cancellationToken);
+        await productStore.GenerateCodeAsync(dbProduct, cancellationToken);
 
-        dbProduct.SerialNumber = await GenerateSerialNumberAsync(cancellationToken);
-        dbProduct.SKUCode = await GenerateSKUCodeAsync(cancellationToken);
+        await productStore.GenerateSerialNumberAsync(dbProduct, cancellationToken);
+        await productStore.GenerateSKUCodeAsync(dbProduct, cancellationToken);
 
         await applicationDbContext.InsertAsync(dbProduct, cancellationToken);
         await applicationDbContext.SaveAsync(cancellationToken);
@@ -141,60 +141,5 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
 
         var discountAmount = price * Convert.ToDecimal((discountPercentage / 100));
         return price - discountAmount + Convert.ToDecimal(taxes) + shippingCost;
-    }
-
-    private async Task<string> GenerateCodeAsync(CancellationToken cancellationToken)
-    {
-        string code;
-        var query = applicationDbContext.GetData<Entities.Product>();
-
-        do
-        {
-            code = await productCodeGenerator.GenerateCodeAsync(cancellationToken);
-        }
-        while (await query.AnyAsync(p => p.Code == code, cancellationToken));
-
-        return code;
-    }
-
-    private async Task<string> GenerateBarCodeAsync(CancellationToken cancellationToken)
-    {
-        string barcode;
-        var query = applicationDbContext.GetData<Entities.Product>();
-
-        do
-        {
-            barcode = await productCodeGenerator.GenerateBarcodeAsync(cancellationToken);
-        } while (await query.AnyAsync(p => p.Barcode == barcode, cancellationToken));
-
-        return barcode;
-    }
-
-    private async Task<string> GenerateSerialNumberAsync(CancellationToken cancellationToken)
-    {
-        string serialNumber;
-        var query = applicationDbContext.GetData<Entities.Product>();
-
-        do
-        {
-            serialNumber = await productCodeGenerator.GenerateSerialNumberAsync(cancellationToken);
-        }
-        while (await query.AnyAsync(p => p.SerialNumber == serialNumber, cancellationToken));
-
-        return serialNumber;
-    }
-
-    private async Task<string> GenerateSKUCodeAsync(CancellationToken cancellationToken)
-    {
-        string skuCode;
-        var query = applicationDbContext.GetData<Entities.Product>();
-
-        do
-        {
-            skuCode = await productCodeGenerator.GenerateSKUAsync(cancellationToken);
-        }
-        while (await query.AnyAsync(p => p.SKUCode == skuCode, cancellationToken));
-
-        return skuCode;
     }
 }

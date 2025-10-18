@@ -26,6 +26,8 @@ public class Product : BaseEntity
 
     public bool IsAvailable { get; set; }
 
+    public bool NotifyAvailability { get; set; }
+
     public double? DiscountPercentage { get; set; }
 
     public double? Taxes { get; set; }
@@ -70,11 +72,13 @@ public class Product : BaseEntity
 
     public string WarehouseLocation { get; set; } = null!;
 
-    public int MinStockAlert { get; set; }
+    public int MinimumStockAlert { get; set; }
 
     public bool IsBackorderable { get; set; }
 
     public DateTime? RestockDate { get; set; }
+
+    public bool NotifyRestockDate { get; set; }
 
     public int ViewCount { get; set; }
 
