@@ -19,6 +19,8 @@ using MarketMania.BusinessLayer.Validations;
 using MarketMania.Clients.Extensions;
 using MarketMania.Contracts;
 using MarketMania.DataAccessLayer;
+using MarketMania.DataAccessLayer.Caching;
+using MarketMania.DataAccessLayer.Caching.Interfaces;
 using MarketMania.DataAccessLayer.Stores;
 using MarketMania.DataAccessLayer.Stores.Interfaces;
 using MarketMania.Extensions;
@@ -70,7 +72,7 @@ builder.Services.AddWebOptimizer(minifyCss: true, minifyJavaScript: builder.Envi
 builder.Services.AddDefaultExceptionHandler();
 builder.Services.AddDefaultProblemDetails();
 
-builder.Services.AddHybridCache();
+builder.Services.AddMemoryCache();
 builder.Services.AddRequestTimeouts();
 
 builder.Services.AddTimeZoneProvider();
@@ -179,6 +181,8 @@ builder.Services.AddPdfSmith(builder.Configuration);
 
 builder.Services.AddSqlServer<ApplicationDbContext>(builder.Configuration.GetConnectionString("SqlConnection"));
 builder.Services.AddScoped<IApplicationDbContext>(services => services.GetRequiredService<ApplicationDbContext>());
+
+builder.Services.AddSingleton<IDataContextCache, DataContextMemoryCache>();
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 {

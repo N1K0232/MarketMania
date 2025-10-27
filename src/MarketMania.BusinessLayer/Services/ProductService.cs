@@ -4,15 +4,17 @@ using AutoMapper;
 using MarketMania.DataAccessLayer;
 using MarketMania.DataAccessLayer.Stores.Interfaces;
 using MarketMania.Shared.Models;
+using MarketMania.Shared.Models.Notifications;
 using MarketMania.Shared.Models.Requests;
 using Microsoft.EntityFrameworkCore;
 using OperationResults;
+using SimpleTransit;
 using TinyHelpers.Extensions;
 using Entities = MarketMania.DataAccessLayer.Entities;
 
 namespace MarketMania.BusinessLayer.Services;
 
-public class ProductService(IApplicationDbContext applicationDbContext, IProductStore productStore, TimeProvider timeProvider, IMapper mapper) : IProductService
+public class ProductService(IApplicationDbContext applicationDbContext, IProductStore productStore, INotificationPublisher notificationPublisher, TimeProvider timeProvider, IMapper mapper) : IProductService
 {
     public async Task<Result> ConfirmAsync(Guid id, CancellationToken cancellationToken)
     {
@@ -40,6 +42,7 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
         await applicationDbContext.DeleteAsync(product, cancellationToken);
         await applicationDbContext.SaveAsync(cancellationToken);
 
+        await notificationPublisher.NotifyAsync(new ProductDeleted(id), cancellationToken);
         return Result.Ok();
     }
 
@@ -113,6 +116,8 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
         await applicationDbContext.SaveAsync(cancellationToken);
 
         var savedProduct = mapper.Map<Product>(dbProduct);
+        await notificationPublisher.NotifyAsync(new ProductCreated(savedProduct.Id), cancellationToken);
+
         return savedProduct;
     }
 
@@ -128,6 +133,8 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
         dbProduct.TotalPrice = CalculateTotalPrice(request);
 
         await applicationDbContext.SaveAsync(cancellationToken);
+        await notificationPublisher.NotifyAsync(new ProductUpdated(id), cancellationToken);
+
         return Result.Ok();
     }
 
