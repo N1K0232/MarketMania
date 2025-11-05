@@ -74,8 +74,8 @@ public class CategoryService(IApplicationDbContext applicationDbContext, IMapper
         }
 
         mapper.Map(request, dbCategory);
-        await applicationDbContext.SaveAsync(cancellationToken);
 
+        await applicationDbContext.SaveAsync(cancellationToken);
         return Result.Ok();
     }
 }

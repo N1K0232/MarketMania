@@ -3,21 +3,23 @@ using AutoMapper.QueryableExtensions;
 using MarketMania.BusinessLayer.Services.Interfaces;
 using MarketMania.DataAccessLayer;
 using MarketMania.Shared.Models;
+using MarketMania.Shared.Models.Notifications;
 using MarketMania.StorageProviders;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using MimeMapping;
 using OperationResults;
+using SimpleTransit;
 using Entities = MarketMania.DataAccessLayer.Entities;
 
 namespace MarketMania.BusinessLayer.Services;
 
-public class ImageService(IApplicationDbContext applicationDbContext, IStorageProvider storageProvider, IMapper mapper) : IImageService
+public class ImageService(IApplicationDbContext applicationDbContext, IStorageProvider storageProvider, INotificationPublisher notificationPublisher, IMapper mapper) : IImageService
 {
     public async Task<Result> DeleteAsync(Guid productId, Guid imageId, CancellationToken cancellationToken)
     {
-        var product = await applicationDbContext.GetData<Entities.Product>().FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
-        if (product is null)
+        var productExists = await applicationDbContext.GetData<Entities.Product>().AnyAsync(p => p.Id == productId, cancellationToken);
+        if (!productExists)
         {
             return Result.Fail(FailureReasons.ItemNotFound, "No product found", $"No product found with id {productId}");
         }
@@ -28,16 +30,10 @@ public class ImageService(IApplicationDbContext applicationDbContext, IStoragePr
             return Result.Fail(FailureReasons.ItemNotFound, "No image found", $"No image found with productId {productId} and imageId {imageId}");
         }
 
-        await storageProvider.DeleteAsync(image.Path, cancellationToken);
         await applicationDbContext.DeleteAsync(image, cancellationToken);
-
-        product.ImagesCount--;
-        if (product.ImagesCount == 0)
-        {
-            product.ImageUrl = null;
-        }
-
         await applicationDbContext.SaveAsync(cancellationToken);
+
+        await notificationPublisher.NotifyAsync(new ImageDeleted(productId, image.Path), cancellationToken);
         return Result.Ok();
     }
 
@@ -107,26 +103,18 @@ public class ImageService(IApplicationDbContext applicationDbContext, IStoragePr
 
     public async Task<Result<Image>> UploadAsync(Guid productId, IFormFile file, CancellationToken cancellationToken)
     {
-        using var stream = file.OpenReadStream();
-        var product = await applicationDbContext.GetData<Entities.Product>(true).FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
-
-        if (product is null)
+        var productExists = await applicationDbContext.GetData<Entities.Product>(true).AnyAsync(p => p.Id == productId, cancellationToken);
+        if (!productExists)
         {
             return Result.Fail(FailureReasons.ItemNotFound, "Invalid product", $"No product found with id {productId}");
         }
 
+        using var stream = file.OpenReadStream();
         var path = $"products\\{productId}\\{file.FileName}";
-        if (await storageProvider.ExistsAsync(path, cancellationToken))
+
+        if (await applicationDbContext.GetData<Entities.Image>().AnyAsync(i => i.Path == path, cancellationToken))
         {
             return Result.Fail(FailureReasons.Conflict, "This image was already uploaded", "This image was already uploaded");
-        }
-
-        await storageProvider.SaveAsync(path, stream, cancellationToken);
-
-        if (product.ImagesCount == 0)
-        {
-            product.ImageUrl = path;
-            product.ImagesCount++;
         }
 
         var dbImage = new Entities.Image
@@ -140,7 +128,7 @@ public class ImageService(IApplicationDbContext applicationDbContext, IStoragePr
         await applicationDbContext.InsertAsync(dbImage, cancellationToken);
         await applicationDbContext.SaveAsync(cancellationToken);
 
-        var savedImage = mapper.Map<Image>(dbImage);
-        return savedImage;
+        await notificationPublisher.NotifyAsync(new ImageCreated(productId, path, stream), cancellationToken);
+        return mapper.Map<Image>(dbImage);
     }
 }

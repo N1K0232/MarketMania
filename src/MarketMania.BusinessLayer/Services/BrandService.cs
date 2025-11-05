@@ -61,7 +61,7 @@ public class BrandService(IApplicationDbContext applicationDbContext, IMapper ma
         await applicationDbContext.InsertAsync(dbBrand, cancellationToken);
         await applicationDbContext.SaveAsync(cancellationToken);
 
-        var savedBrand = mapper.Map<Brand>(request);
+        var savedBrand = mapper.Map<Brand>(dbBrand);
         return savedBrand;
     }
 

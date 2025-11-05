@@ -74,8 +74,8 @@ public class PromotionService(IApplicationDbContext applicationDbContext, IMappe
         }
 
         mapper.Map(request, dbPromotion);
-        await applicationDbContext.SaveAsync(cancellationToken);
 
+        await applicationDbContext.SaveAsync(cancellationToken);
         return Result.Ok();
     }
 }

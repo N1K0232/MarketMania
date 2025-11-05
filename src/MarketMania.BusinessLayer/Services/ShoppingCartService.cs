@@ -22,12 +22,11 @@ public class ShoppingCartService(IApplicationDbContext applicationDbContext, Hyb
             };
 
             await applicationDbContext.InsertAsync(existingCart, cancellationToken);
+            await applicationDbContext.SaveAsync(cancellationToken);
         }
         else
         {
 
         }
-
-        await applicationDbContext.SaveAsync(cancellationToken);
     }
 }

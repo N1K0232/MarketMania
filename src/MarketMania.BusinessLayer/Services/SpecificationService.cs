@@ -100,8 +100,8 @@ public class SpecificationService(IApplicationDbContext applicationDbContext, IM
         }
 
         mapper.Map(request, specification);
-        await applicationDbContext.SaveAsync(cancellationToken);
 
+        await applicationDbContext.SaveAsync(cancellationToken);
         return Result.Ok();
     }
 }

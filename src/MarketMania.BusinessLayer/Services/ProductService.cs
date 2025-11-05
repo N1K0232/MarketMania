@@ -14,7 +14,7 @@ using Entities = MarketMania.DataAccessLayer.Entities;
 
 namespace MarketMania.BusinessLayer.Services;
 
-public class ProductService(IApplicationDbContext applicationDbContext, IProductStore productStore, INotificationPublisher notificationPublisher, TimeProvider timeProvider, IMapper mapper) : IProductService
+public class ProductService(IApplicationDbContext applicationDbContext, IProductStore productStore, INotificationPublisher notificationPublisher, IMapper mapper) : IProductService
 {
     public async Task<Result> ConfirmAsync(Guid id, CancellationToken cancellationToken)
     {
@@ -115,10 +115,8 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
         await applicationDbContext.InsertAsync(dbProduct, cancellationToken);
         await applicationDbContext.SaveAsync(cancellationToken);
 
-        var savedProduct = mapper.Map<Product>(dbProduct);
-        await notificationPublisher.NotifyAsync(new ProductCreated(savedProduct.Id), cancellationToken);
-
-        return savedProduct;
+        await notificationPublisher.NotifyAsync(new ProductCreated(dbProduct.Id), cancellationToken);
+        return mapper.Map<Product>(dbProduct);
     }
 
     public async Task<Result> UpdateAsync(Guid id, SaveProductRequest request, CancellationToken cancellationToken)

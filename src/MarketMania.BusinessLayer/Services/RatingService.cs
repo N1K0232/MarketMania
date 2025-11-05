@@ -18,8 +18,8 @@ public class RatingService(IApplicationDbContext applicationDbContext, ISentimen
 {
     public async Task<Result> DeleteAsync(Guid productId, Guid ratingId, CancellationToken cancellationToken)
     {
-        var product = await applicationDbContext.GetData<Entities.Product>(true).FirstOrDefaultAsync(p => p.Id == productId && p.IsPublished, cancellationToken);
-        if (product is null)
+        var productExists = await applicationDbContext.GetData<Entities.Product>(true).AnyAsync(p => p.Id == productId && p.IsPublished, cancellationToken);
+        if (!productExists)
         {
             return Result.Fail(FailureReasons.ItemNotFound, "No product found", $"No product found with id {productId}");
         }
@@ -29,8 +29,6 @@ public class RatingService(IApplicationDbContext applicationDbContext, ISentimen
         {
             return Result.Fail(FailureReasons.ItemNotFound, "No rating found", $"No rating found with id {ratingId}");
         }
-
-        product.RatingsCount--;
 
         await applicationDbContext.DeleteAsync(rating, cancellationToken);
         await applicationDbContext.SaveAsync(cancellationToken);
@@ -79,8 +77,8 @@ public class RatingService(IApplicationDbContext applicationDbContext, ISentimen
 
     public async Task<Result<Rating>> PublishAsync(Guid productId, NewRatingRequest request, CancellationToken cancellationToken)
     {
-        var product = await applicationDbContext.GetData<Entities.Product>(true).FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
-        if (product is null)
+        var productExists = await applicationDbContext.GetData<Entities.Product>(true).AnyAsync(p => p.Id == productId, cancellationToken);
+        if (!productExists)
         {
             return Result.Fail(FailureReasons.ItemNotFound, "No product found", $"No product found with id {productId}");
         }
@@ -91,9 +89,6 @@ public class RatingService(IApplicationDbContext applicationDbContext, ISentimen
 
         var sentimentResponse = await sentimentAnalysisClient.GetPredictionAsync(request.Text, cancellationToken);
         dbRating.SentimentScore = sentimentResponse!.Score;
-
-        product.RatingsCount++;
-        product.RatingsAverage = request.Score / product.RatingsCount;
 
         await applicationDbContext.InsertAsync(dbRating, cancellationToken);
         await applicationDbContext.SaveAsync(cancellationToken);
