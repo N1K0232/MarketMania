@@ -12,27 +12,21 @@ public class DataContextMemoryCache(IMemoryCache cache) : IDataContextCache
         return Task.CompletedTask;
     }
 
-    public Task RemoveAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        cache.Remove(id);
-        return Task.CompletedTask;
-    }
-
     public Task<T?> GetAsync<T>(Guid id, CancellationToken cancellationToken = default) where T : BaseEntity
     {
-        var result = cache.Get<T>(id);
-        return Task.FromResult(result);
+        var entity = cache.Get<T>(id.ToString());
+        return Task.FromResult(entity);
     }
 
-    public Task<IEnumerable<T>?> GetListAsync<T>(string key, CancellationToken cancellationToken = default)
+    public Task<IEnumerable<T>?> GetListAsync<T>(string key, CancellationToken cancellationToken = default) where T : BaseEntity
     {
-        var result = cache.Get<IEnumerable<T>>(key);
-        return Task.FromResult(result);
+        var entities = cache.Get<IEnumerable<T>>(key);
+        return Task.FromResult(entities);
     }
 
-    public Task SetAsync<T>(T value, TimeSpan absoluteExpirationRelativeToNow, CancellationToken cancellationToken = default) where T : BaseEntity
+    public Task SetAsync<T>(T value, CancellationToken cancellationToken = default) where T : BaseEntity
     {
-        cache.Set(value.Id, value, absoluteExpirationRelativeToNow);
+        cache.Set(value.Id.ToString(), value);
         return Task.CompletedTask;
     }
 }
