@@ -10,7 +10,6 @@ using MarketMania.Authentication.DataProtection;
 using MarketMania.Authentication.Entities;
 using MarketMania.Authentication.Generators;
 using MarketMania.Authentication.Generators.Interfaces;
-using MarketMania.Authentication.Validators;
 using MarketMania.BusinessLayer.Extensions;
 using MarketMania.BusinessLayer.Publishers;
 using MarketMania.BusinessLayer.Services;
@@ -44,7 +43,6 @@ using MinimalHelpers.Validation;
 using OperationResults.AspNetCore.Http;
 using Serilog;
 using SimpleAuthentication;
-using SimpleAuthentication.ApiKey;
 using SimpleTransit;
 using TinyHelpers.AspNetCore.Extensions;
 using TinyHelpers.AspNetCore.OpenApi;
@@ -72,7 +70,6 @@ builder.Services.AddWebOptimizer(minifyCss: true, minifyJavaScript: builder.Envi
 builder.Services.AddDefaultExceptionHandler();
 builder.Services.AddDefaultProblemDetails();
 
-builder.Services.AddMemoryCache();
 builder.Services.AddRequestTimeouts();
 
 builder.Services.AddTimeZoneProvider();
@@ -157,18 +154,6 @@ if (swagger.IsEnabled)
     });
 }
 
-builder.Services.AddDataProtection()
-    .SetApplicationName(settings.ApplicationName)
-    .PersistKeysToDbContext<ApplicationDbContext>();
-
-builder.Services.AddSingleton(services =>
-{
-    var dataProtectionProvider = services.GetRequiredService<IDataProtectionProvider>();
-    var dataProtector = dataProtectionProvider.CreateProtector(settings.ApplicationName);
-
-    return dataProtector.ToTimeLimitedDataProtector();
-});
-
 builder.Services.AddSingleton<IDataProtectionService, DataProtectionService>();
 builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
 
@@ -179,10 +164,21 @@ builder.Services.AddEmailClient(builder.Configuration);
 builder.Services.AddSentimentApi(builder.Configuration);
 builder.Services.AddPdfSmith(builder.Configuration);
 
-builder.Services.AddSqlServer<ApplicationDbContext>(builder.Configuration.GetConnectionString("SqlConnection"));
-builder.Services.AddScoped<IApplicationDbContext>(services => services.GetRequiredService<ApplicationDbContext>());
+builder.Services.AddDbContext<IApplicationDbContext, ApplicationDbContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("SqlConnection");
+    options.UseSqlServer(connectionString);
+});
 
-builder.Services.AddSingleton<IDataContextCache, DataContextMemoryCache>();
+builder.Services.AddDistributedSqlServerCache(options =>
+{
+    options.ConnectionString = builder.Configuration.GetConnectionString("SqlConnection");
+    options.SchemaName = "dbo";
+    options.TableName = "CacheStore";
+    options.DefaultSlidingExpiration = TimeSpan.FromHours(1);
+});
+
+builder.Services.AddSingleton<IDataContextCache, DataContextDistributedCache>();
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 {
@@ -214,8 +210,20 @@ builder.Services.AddAuthentication(options =>
     options.Cookie.SameSite = SameSiteMode.Strict;
 });
 
-builder.Services.AddScoped<AuthenticationDbContext>(services => services.GetRequiredService<ApplicationDbContext>());
-builder.Services.AddTransient<IApiKeyValidator, SubscriptionValidator>();
+builder.Services.AddDataProtection()
+    .SetApplicationName(settings.ApplicationName)
+    .PersistKeysToDbContext<ApplicationDbContext>();
+
+builder.Services.AddSingleton(services =>
+{
+    var dataProtectionProvider = services.GetRequiredService<IDataProtectionProvider>();
+    var dataProtector = dataProtectionProvider.CreateProtector(settings.ApplicationName);
+
+    return dataProtector.ToTimeLimitedDataProtector();
+});
+
+//builder.Services.AddScoped<AuthenticationDbContext>(services => services.GetRequiredService<ApplicationDbContext>());
+//builder.Services.AddTransient<IApiKeyValidator, SubscriptionValidator>();
 
 builder.Services.AddScoped<IAuthorizationHandler, UserActiveHandler>();
 builder.Services.AddAuthorization(options =>
