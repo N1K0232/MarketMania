@@ -27,7 +27,7 @@ internal class ProductConfiguration : BaseEntityConfiguration<Product>
         builder.Property(p => p.IsAvailable).ValueGeneratedOnAdd().HasDefaultValueSql("((1))");
         builder.Property(p => p.IsFeatured).ValueGeneratedOnAdd().HasDefaultValueSql("((0))");
 
-        builder.Property(p => p.Tags).HasArrayConversion().IsRequired();
+        builder.Property(p => p.Tags).HasArrayConversion().IsRequired(false);
         builder.Property(p => p.Barcode).HasMaxLength(100).IsRequired();
 
         builder.Property(p => p.SeoTitle).HasMaxLength(255).IsRequired(false);

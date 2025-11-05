@@ -44,7 +44,7 @@ public class Product : BaseEntity
 
     public int ImagesCount { get; set; }
 
-    public string[] Tags { get; set; } = null!;
+    public IEnumerable<string> Tags { get; set; } = null!;
 
     public string? SeoTitle { get; set; }
 
