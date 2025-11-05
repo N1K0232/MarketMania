@@ -2,7 +2,7 @@
 
 public class FileSystemStorageProvider(FileSystemStorageSettings settings) : IStorageProvider
 {
-    public async Task SaveAsync(string path, Stream stream, CancellationToken cancellationToken)
+    public async Task SaveAsync(string path, Stream stream, CancellationToken cancellationToken = default)
     {
         var fullPath = Path.Combine(settings.StorageFolder, path);
         var directoryName = Path.GetDirectoryName(fullPath);
@@ -12,13 +12,13 @@ public class FileSystemStorageProvider(FileSystemStorageSettings settings) : ISt
             Directory.CreateDirectory(directoryName);
         }
 
-        using var fileStream = new FileStream(fullPath, FileMode.CreateNew, FileAccess.Write);
+        await using var fileStream = new FileStream(fullPath, FileMode.CreateNew, FileAccess.Write);
         await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
 
         fileStream.Close();
     }
 
-    public Task<Stream?> ReadAsync(string path, CancellationToken cancellationToken)
+    public Task<Stream?> ReadAsync(string path, CancellationToken cancellationToken = default)
     {
         var fullPath = Path.Combine(settings.StorageFolder, path);
         if (!File.Exists(fullPath))
@@ -30,7 +30,7 @@ public class FileSystemStorageProvider(FileSystemStorageSettings settings) : ISt
         return Task.FromResult<Stream?>(stream);
     }
 
-    public Task DeleteAsync(string path, CancellationToken cancellationToken)
+    public Task DeleteAsync(string path, CancellationToken cancellationToken = default)
     {
         var fullPath = Path.Combine(settings.StorageFolder, path);
         if (File.Exists(fullPath))
@@ -41,7 +41,7 @@ public class FileSystemStorageProvider(FileSystemStorageSettings settings) : ISt
         return Task.CompletedTask;
     }
 
-    public Task<bool> ExistsAsync(string path, CancellationToken cancellationToken)
+    public Task<bool> ExistsAsync(string path, CancellationToken cancellationToken = default)
     {
         var fullPath = Path.Combine(settings.StorageFolder, path);
         var exists = File.Exists(fullPath);
