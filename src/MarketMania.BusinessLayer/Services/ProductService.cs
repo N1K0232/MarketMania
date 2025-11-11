@@ -1,12 +1,13 @@
 ﻿using System.Linq.Dynamic.Core;
 using System.Linq.Dynamic.Core.Exceptions;
 using AutoMapper;
+using MarketMania.BusinessLayer.Generators.Interfaces;
 using MarketMania.DataAccessLayer;
-using MarketMania.DataAccessLayer.Stores.Interfaces;
 using MarketMania.Shared.Models;
 using MarketMania.Shared.Models.Notifications;
 using MarketMania.Shared.Models.Requests;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OperationResults;
 using SimpleTransit;
 using TinyHelpers.Extensions;
@@ -14,7 +15,7 @@ using Entities = MarketMania.DataAccessLayer.Entities;
 
 namespace MarketMania.BusinessLayer.Services;
 
-public class ProductService(IApplicationDbContext applicationDbContext, IProductStore productStore, INotificationPublisher notificationPublisher, IMapper mapper) : IProductService
+public class ProductService(IApplicationDbContext applicationDbContext, IServiceProvider serviceProvider, INotificationPublisher notificationPublisher, IMapper mapper) : IProductService
 {
     public async Task<Result> ConfirmAsync(Guid id, CancellationToken cancellationToken)
     {
@@ -106,17 +107,14 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
         var dbProduct = mapper.Map<Entities.Product>(request);
         dbProduct.TotalPrice = CalculateTotalPrice(request);
 
-        await productStore.GenerateBarcodeAsync(dbProduct, cancellationToken);
-        await productStore.GenerateCodeAsync(dbProduct, cancellationToken);
-
-        await productStore.GenerateSerialNumberAsync(dbProduct, cancellationToken);
-        await productStore.GenerateSKUCodeAsync(dbProduct, cancellationToken);
-
         await applicationDbContext.InsertAsync(dbProduct, cancellationToken);
-        await applicationDbContext.SaveAsync(cancellationToken);
+        await ProtectAsync(dbProduct, cancellationToken);
 
+        await applicationDbContext.SaveAsync(cancellationToken);
         await notificationPublisher.NotifyAsync(new ProductCreated(dbProduct.Id), cancellationToken);
-        return mapper.Map<Product>(dbProduct);
+
+        var createdProduct = mapper.Map<Product>(dbProduct);
+        return createdProduct;
     }
 
     public async Task<Result> UpdateAsync(Guid id, SaveProductRequest request, CancellationToken cancellationToken)
@@ -130,9 +128,10 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
         mapper.Map(request, dbProduct);
         dbProduct.TotalPrice = CalculateTotalPrice(request);
 
+        await ProtectAsync(dbProduct, cancellationToken);
         await applicationDbContext.SaveAsync(cancellationToken);
-        await notificationPublisher.NotifyAsync(new ProductUpdated(id), cancellationToken);
 
+        await notificationPublisher.NotifyAsync(new ProductUpdated(id), cancellationToken);
         return Result.Ok();
     }
 
@@ -146,5 +145,20 @@ public class ProductService(IApplicationDbContext applicationDbContext, IProduct
 
         var discountAmount = price * Convert.ToDecimal((discountPercentage / 100));
         return price - discountAmount + Convert.ToDecimal(taxes) + shippingCost;
+    }
+
+    private async Task ProtectAsync(Entities.Product product, CancellationToken cancellationToken)
+    {
+        var barcodeGenerator = serviceProvider.GetRequiredService<IBarcodeGenerator>();
+        await barcodeGenerator.GenerateAsync(product, cancellationToken);
+
+        var codeGenerator = serviceProvider.GetRequiredService<ICodeGenerator>();
+        await codeGenerator.GenerateAsync(product, cancellationToken);
+
+        var skuCodeGenerator = serviceProvider.GetRequiredService<ISKUCodeGenerator>();
+        await skuCodeGenerator.GenerateAsync(product, cancellationToken);
+
+        var serialNumberGenerator = serviceProvider.GetRequiredService<ISerialNumberGenerator>();
+        await serialNumberGenerator.GenerateAsync(product, cancellationToken);
     }
 }

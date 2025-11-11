@@ -26,8 +26,6 @@ public class Product : BaseEntity
 
     public bool IsAvailable { get; set; }
 
-    public bool NotifyAvailability { get; set; }
-
     public double? DiscountPercentage { get; set; }
 
     public double? Taxes { get; set; }
@@ -35,6 +33,8 @@ public class Product : BaseEntity
     public decimal? ShippingCost { get; set; }
 
     public decimal TotalPrice { get; set; }
+
+    public bool NotifyAvailability { get; set; }
 
     public int RatingsCount { get; set; }
 
@@ -76,7 +76,7 @@ public class Product : BaseEntity
 
     public bool IsBackorderable { get; set; }
 
-    public DateTime? RestockDate { get; set; }
+    public DateOnly? RestockDate { get; set; }
 
     public bool NotifyRestockDate { get; set; }
 

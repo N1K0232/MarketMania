@@ -7,7 +7,7 @@ public record class SaveProductRequest
     Guid SupplierId,
     Guid? PromotionId,
     string Name,
-    string? Title,
+    string Title,
     string? Subtitle,
     string Description,
     int Quantity,
@@ -15,6 +15,7 @@ public record class SaveProductRequest
     decimal? ShippingCost,
     double? DiscountPercentage,
     double? Taxes,
+    bool NotifyAvailability,
     string[] Tags,
     string? SeoTitle,
     string? SeoDescription,
@@ -25,6 +26,7 @@ public record class SaveProductRequest
     double Length,
     bool IsBackorderable,
     string WarehouseLocation,
-    int MinStockAlert,
-    DateTime? RestockDate
+    int MinimumStockAlert,
+    DateOnly? RestockDate,
+    bool NotifyRestockDate
 );

@@ -14,7 +14,6 @@ public class ProductMapperProfile : Profile
             .ForMember(p => p.Category, options => options.MapFrom(p => p.Category.Name))
             .ForMember(p => p.Supplier, options => options.MapFrom(p => p.Supplier.Name));
 
-        CreateMap<SaveProductRequest, Entities.Product>()
-            .ForMember(p => p.Tags, options => options.MapFrom(request => string.Join(',', request.Tags)));
+        CreateMap<SaveProductRequest, Entities.Product>();
     }
 }

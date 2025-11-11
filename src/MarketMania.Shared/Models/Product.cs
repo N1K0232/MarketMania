@@ -40,7 +40,7 @@ public class Product
 
     public string ImageUrl { get; set; } = null!;
 
-    public string Tags { get; set; } = null!;
+    public IEnumerable<string> Tags { get; set; } = null!;
 
     public string? SeoTitle { get; set; }
 
@@ -64,11 +64,11 @@ public class Product
 
     public string WarehouseLocation { get; set; } = null!;
 
-    public int MinStockAlert { get; set; }
+    public int MinimumStockAlert { get; set; }
 
     public bool IsBackorderable { get; set; }
 
-    public DateTime? RestockDate { get; set; }
+    public DateOnly? RestockDate { get; set; }
 
     public int ViewCount { get; set; }
 

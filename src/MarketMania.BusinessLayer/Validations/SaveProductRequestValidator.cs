@@ -3,6 +3,7 @@ using MarketMania.DataAccessLayer;
 using MarketMania.DataAccessLayer.Entities;
 using MarketMania.Shared.Models.Requests;
 using Microsoft.EntityFrameworkCore;
+using TinyHelpers.Extensions;
 
 namespace MarketMania.BusinessLayer.Validations;
 
@@ -41,6 +42,16 @@ public class SaveProductRequestValidator : AbstractValidator<SaveProductRequest>
             .WithMessage("Name is required")
             .MaximumLength(255)
             .WithMessage("Name is maximum 255 characters");
+
+        RuleFor(p => p.Title)
+            .NotEmpty()
+            .WithMessage("Title is required")
+            .MaximumLength(100)
+            .WithMessage("Title is maximum 100 characters long");
+
+        RuleFor(p => p.Subtitle)
+            .MaximumLength(100)
+            .WithMessage("Subtitle is maximum 100 characters long");
 
         RuleFor(p => p.Description)
             .NotEmpty()
@@ -110,12 +121,12 @@ public class SaveProductRequestValidator : AbstractValidator<SaveProductRequest>
             .MaximumLength(100)
             .WithMessage("Warehouse should be only 100 characters long");
 
-        RuleFor(p => p.MinStockAlert)
+        RuleFor(p => p.MinimumStockAlert)
             .GreaterThan(0)
             .WithMessage("Cannot insert a product with 0 or negative alert for minimum stock");
 
         RuleFor(p => p.RestockDate)
-            .GreaterThanOrEqualTo(DateTime.UtcNow)
+            .GreaterThanOrEqualTo(DateTime.UtcNow.ToDateOnly())
             .WithMessage("Cannot insert a product with past restock date");
     }
 

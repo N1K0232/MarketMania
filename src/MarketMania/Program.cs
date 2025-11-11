@@ -11,6 +11,7 @@ using MarketMania.Authentication.Entities;
 using MarketMania.Authentication.Generators;
 using MarketMania.Authentication.Generators.Interfaces;
 using MarketMania.BusinessLayer.Extensions;
+using MarketMania.BusinessLayer.Generators;
 using MarketMania.BusinessLayer.Publishers;
 using MarketMania.BusinessLayer.Services;
 using MarketMania.BusinessLayer.Settings;
@@ -20,8 +21,6 @@ using MarketMania.Contracts;
 using MarketMania.DataAccessLayer;
 using MarketMania.DataAccessLayer.Caching;
 using MarketMania.DataAccessLayer.Caching.Interfaces;
-using MarketMania.DataAccessLayer.Stores;
-using MarketMania.DataAccessLayer.Stores.Interfaces;
 using MarketMania.Extensions;
 using MarketMania.Requirements;
 using MarketMania.Security;
@@ -263,6 +262,11 @@ else
     });
 }
 
+builder.Services.Scan(scan => scan.FromAssemblyOf<BarcodeGenerator>()
+    .AddClasses(classes => classes.InNamespaceOf<BarcodeGenerator>())
+    .AsImplementedInterfaces()
+    .WithScopedLifetime());
+
 builder.Services.Scan(scan => scan.FromAssemblyOf<IdentityService>()
     .AddClasses(classes => classes.InNamespaceOf<IdentityService>())
     .AsImplementedInterfaces()
@@ -281,7 +285,6 @@ if (builder.Environment.IsProduction())
     builder.Services.AddOpenTelemetry().UseAzureMonitor();
 }
 
-builder.Services.AddScoped<IProductStore, ProductStore>();
 builder.Services.AddEncryption(builder.Configuration);
 
 builder.Services.AddSimpleTransit(options =>
