@@ -70,6 +70,8 @@ public class Product
 
     public DateOnly? RestockDate { get; set; }
 
+    public TimeOnly? RestockTime { get; set; }
+
     public int ViewCount { get; set; }
 
     public int PurchaseCount { get; set; }

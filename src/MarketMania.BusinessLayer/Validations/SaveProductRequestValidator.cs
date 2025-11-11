@@ -128,6 +128,10 @@ public class SaveProductRequestValidator : AbstractValidator<SaveProductRequest>
         RuleFor(p => p.RestockDate)
             .GreaterThanOrEqualTo(DateTime.UtcNow.ToDateOnly())
             .WithMessage("Cannot insert a product with past restock date");
+
+        RuleFor(p => p.RestockTime)
+            .GreaterThanOrEqualTo(DateTime.UtcNow.ToTimeOnly())
+            .WithMessage("Cannot insert a product with past restock time");
     }
 
     private async Task<bool> BrandMustExistsAsync(Guid brandId, CancellationToken cancellationToken)

@@ -78,6 +78,8 @@ public class Product : BaseEntity
 
     public DateOnly? RestockDate { get; set; }
 
+    public TimeOnly? RestockTime { get; set; }
+
     public bool NotifyRestockDate { get; set; }
 
     public int ViewCount { get; set; }

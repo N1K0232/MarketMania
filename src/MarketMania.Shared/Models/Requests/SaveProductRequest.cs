@@ -28,5 +28,6 @@ public record class SaveProductRequest
     string WarehouseLocation,
     int MinimumStockAlert,
     DateOnly? RestockDate,
+    TimeOnly? RestockTime,
     bool NotifyRestockDate
 );
