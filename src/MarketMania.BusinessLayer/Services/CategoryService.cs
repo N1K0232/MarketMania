@@ -119,13 +119,13 @@ public class CategoryService(IApplicationDbContext applicationDbContext, IMapper
         }
         catch (DbUpdateException ex)
         {
-            return Result.Fail(FailureReasons.ClientError, "Unable to delete the category", ex.Message);
+            return Result.Fail(FailureReasons.ClientError, "Unable to update the category", ex.Message);
         }
         catch (SqlException ex)
         {
             if (ex.ErrorCode is 2627)
             {
-                return Result.Fail(FailureReasons.ClientError, "Unable to delete the category", ex.Message);
+                return Result.Fail(FailureReasons.ClientError, "Unable to update the category", ex.Message);
             }
 
             return Result.Fail(FailureReasons.DatabaseError, "Database error", ex.Message);

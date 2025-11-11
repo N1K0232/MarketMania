@@ -120,13 +120,13 @@ public class BrandService(IApplicationDbContext applicationDbContext, IMapper ma
         }
         catch (DbUpdateException ex)
         {
-            return Result.Fail(FailureReasons.ClientError, "Unable to delete the brand", ex.Message);
+            return Result.Fail(FailureReasons.ClientError, "Unable to update the brand", ex.Message);
         }
         catch (SqlException ex)
         {
             if (ex.ErrorCode is 2627)
             {
-                return Result.Fail(FailureReasons.ClientError, "Unable to delete the brand", ex.Message);
+                return Result.Fail(FailureReasons.ClientError, "Unable to update the brand", ex.Message);
             }
 
             return Result.Fail(FailureReasons.DatabaseError, "Database error", ex.Message);
