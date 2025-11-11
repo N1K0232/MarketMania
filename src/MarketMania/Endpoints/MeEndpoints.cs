@@ -11,7 +11,7 @@ public class MeEndpoints : IEndpointRouteHandlerBuilder
     {
         var meApiGroup = endpoints.MapGroup("/api/me").WithTags("Me").RequireAuthorization();
 
-        meApiGroup.MapGet("/api/me", GetAsync)
+        meApiGroup.MapGet(string.Empty, GetAsync)
             .Produces<User>()
             .WithName("me")
             .WithOpenApi();
