@@ -6,6 +6,7 @@ using MarketMania.DataAccessLayer;
 using MarketMania.Shared.Models;
 using MarketMania.Shared.Models.Notifications;
 using MarketMania.Shared.Models.Requests;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OperationResults;
@@ -19,32 +20,72 @@ public class ProductService(IApplicationDbContext applicationDbContext, IService
 {
     public async Task<Result> ConfirmAsync(Guid id, CancellationToken cancellationToken)
     {
-        var product = await applicationDbContext.GetAsync<Entities.Product>(id, cancellationToken);
-        if (product is null)
+        try
         {
-            return Result.Fail(FailureReasons.ItemNotFound, "Product not found", $"No product found with id {id}");
+            var product = await applicationDbContext.GetAsync<Entities.Product>(id, cancellationToken);
+            if (product is null)
+            {
+                return Result.Fail(FailureReasons.ItemNotFound, "Product not found", $"No product found with id {id}");
+            }
+
+            product.IsPublished = true;
+            product.PublishedAt = DateTime.UtcNow;
+
+            await applicationDbContext.SaveAsync(cancellationToken);
+            return Result.Ok();
         }
+        catch (DbUpdateException ex)
+        {
+            return Result.Fail(FailureReasons.ClientError, "Unable to update the product", ex.Message);
+        }
+        catch (SqlException ex)
+        {
+            if (ex.ErrorCode is 2627)
+            {
+                return Result.Fail(FailureReasons.ClientError, "Unable to update the product", ex.Message);
+            }
 
-        product.IsPublished = true;
-        product.PublishedAt = DateTime.UtcNow;
-
-        await applicationDbContext.SaveAsync(cancellationToken);
-        return Result.Ok();
+            return Result.Fail(FailureReasons.DatabaseError, "Database error", ex.Message);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return Result.Fail(FailureReasons.ItemNotFound, "No product found", ex.Message);
+        }
     }
 
     public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        var product = await applicationDbContext.GetAsync<Entities.Product>(id, cancellationToken);
-        if (product is null)
+        try
         {
-            return Result.Fail(FailureReasons.ItemNotFound, "Product not found", $"No product found with id {id}");
+            var product = await applicationDbContext.GetAsync<Entities.Product>(id, cancellationToken);
+            if (product is null)
+            {
+                return Result.Fail(FailureReasons.ItemNotFound, "Product not found", $"No product found with id {id}");
+            }
+
+            await applicationDbContext.DeleteAsync(product, cancellationToken);
+            await applicationDbContext.SaveAsync(cancellationToken);
+
+            await notificationPublisher.NotifyAsync(new ProductDeleted(id), cancellationToken);
+            return Result.Ok();
         }
+        catch (DbUpdateException ex)
+        {
+            return Result.Fail(FailureReasons.ClientError, "Unable to delete the product", ex.Message);
+        }
+        catch (SqlException ex)
+        {
+            if (ex.ErrorCode is 2627)
+            {
+                return Result.Fail(FailureReasons.ClientError, "Unable to delete the product", ex.Message);
+            }
 
-        await applicationDbContext.DeleteAsync(product, cancellationToken);
-        await applicationDbContext.SaveAsync(cancellationToken);
-
-        await notificationPublisher.NotifyAsync(new ProductDeleted(id), cancellationToken);
-        return Result.Ok();
+            return Result.Fail(FailureReasons.DatabaseError, "Database error", ex.Message);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return Result.Fail(FailureReasons.ItemNotFound, "No product found", ex.Message);
+        }
     }
 
     public async Task<Result<Product>> GetAsync(Guid id, CancellationToken cancellationToken)
@@ -104,35 +145,71 @@ public class ProductService(IApplicationDbContext applicationDbContext, IService
 
     public async Task<Result<Product>> InsertAsync(SaveProductRequest request, CancellationToken cancellationToken)
     {
-        var dbProduct = mapper.Map<Entities.Product>(request);
-        dbProduct.TotalPrice = CalculateTotalPrice(request);
+        try
+        {
+            var dbProduct = mapper.Map<Entities.Product>(request);
+            dbProduct.TotalPrice = CalculateTotalPrice(request);
 
-        await applicationDbContext.InsertAsync(dbProduct, cancellationToken);
-        await ProtectAsync(dbProduct, cancellationToken);
+            await applicationDbContext.InsertAsync(dbProduct, cancellationToken);
+            await ProtectAsync(dbProduct, cancellationToken);
 
-        await applicationDbContext.SaveAsync(cancellationToken);
-        await notificationPublisher.NotifyAsync(new ProductCreated(dbProduct.Id), cancellationToken);
+            await applicationDbContext.SaveAsync(cancellationToken);
+            await notificationPublisher.NotifyAsync(new ProductCreated(dbProduct.Id), cancellationToken);
 
-        var createdProduct = mapper.Map<Product>(dbProduct);
-        return createdProduct;
+            var createdProduct = mapper.Map<Product>(dbProduct);
+            return createdProduct;
+        }
+        catch (DbUpdateException ex)
+        {
+            return Result.Fail(FailureReasons.ClientError, "Unable to create the product", ex.Message);
+        }
+        catch (SqlException ex)
+        {
+            if (ex.ErrorCode is 2627)
+            {
+                return Result.Fail(FailureReasons.ClientError, "Unable to create the product", ex.Message);
+            }
+
+            return Result.Fail(FailureReasons.DatabaseError, "Database error", ex.Message);
+        }
     }
 
     public async Task<Result> UpdateAsync(Guid id, SaveProductRequest request, CancellationToken cancellationToken)
     {
-        var dbProduct = await applicationDbContext.GetData<Entities.Product>(true).FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
-        if (dbProduct is null)
+        try
         {
-            return Result.Fail(FailureReasons.ItemNotFound, "Product not found", $"No product found with id {id}");
+            var dbProduct = await applicationDbContext.GetData<Entities.Product>(true).FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+            if (dbProduct is null)
+            {
+                return Result.Fail(FailureReasons.ItemNotFound, "Product not found", $"No product found with id {id}");
+            }
+
+            mapper.Map(request, dbProduct);
+            dbProduct.TotalPrice = CalculateTotalPrice(request);
+
+            await ProtectAsync(dbProduct, cancellationToken);
+            await applicationDbContext.SaveAsync(cancellationToken);
+
+            await notificationPublisher.NotifyAsync(new ProductUpdated(id), cancellationToken);
+            return Result.Ok();
         }
+        catch (DbUpdateException ex)
+        {
+            return Result.Fail(FailureReasons.ClientError, "Unable to update the product", ex.Message);
+        }
+        catch (SqlException ex)
+        {
+            if (ex.ErrorCode is 2627)
+            {
+                return Result.Fail(FailureReasons.ClientError, "Unable to update the product", ex.Message);
+            }
 
-        mapper.Map(request, dbProduct);
-        dbProduct.TotalPrice = CalculateTotalPrice(request);
-
-        await ProtectAsync(dbProduct, cancellationToken);
-        await applicationDbContext.SaveAsync(cancellationToken);
-
-        await notificationPublisher.NotifyAsync(new ProductUpdated(id), cancellationToken);
-        return Result.Ok();
+            return Result.Fail(FailureReasons.DatabaseError, "Database error", ex.Message);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return Result.Fail(FailureReasons.ItemNotFound, "No product found", ex.Message);
+        }
     }
 
     private static decimal CalculateTotalPrice(SaveProductRequest request)
