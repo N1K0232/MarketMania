@@ -1,4 +1,5 @@
-﻿function productsList(language) {
+﻿function productsList(language)
+{
     Alpine.data("productsList", () => ({
         list: {
             items: [],
@@ -10,7 +11,8 @@
         name: '',
         loading: false,
 
-        loadProducts: async function () {
+        loadProducts: async function ()
+        {
             this.loading = true;
 
             try {
@@ -18,13 +20,17 @@
                 const content = await response.json();
 
                 let errorMessage = GetErrorMessage(response.status, content);
-                if (errorMessage == null) {
+                if (errorMessage == null)
+                {
                     this.list = content;
 
-                    for (const product of this.list.items) {
-                        if (product.images && product.images.length > 0) {
+                    for (const product of this.list.items)
+                    {
+                        if (product.images && product.images.length > 0)
+                        {
                             const imageResponse = await getImageAsync(product.id, product.images[0].id, language);
-                            if (!imageResponse.ok) {
+                            if (!imageResponse.ok)
+                            {
                                 const imageContent = await imageResponse.json();
                                 errorMessage = GetErrorMessage(imageResponse.status, imageContent);
 
@@ -34,30 +40,36 @@
                             const blob = await imageResponse.blob();
                             product.imageSource = URL.createObjectURL(blob);
                         }
-                        else {
+                        else
+                        {
                             product.imageSource = null;
                         }
                     }
                 }
-                else {
+                else
+                {
                     alert(errorMessage);
                 }
             }
-            catch (error) {
+            catch (error)
+            {
                 console.error(error);
             }
-            finally {
+            finally
+            {
                 this.loading = false;
             }
         },
 
-        goToDetails: function (id) {
+        goToDetails: function (id)
+        {
             window.location.href = `/products/details/${id}`;
         }
     }));
 }
 
-async function getProductsAsync(name, language) {
+async function getProductsAsync(name, language)
+{
     let url = '/api/products';
 
     if (name && name.trim() !== '') {
@@ -74,7 +86,8 @@ async function getProductsAsync(name, language) {
     return response;
 }
 
-async function getImageAsync(productId, imageId, language) {
+async function getImageAsync(productId, imageId, language)
+{
     const response = await fetch(`/api/products/${productId}/images/${imageId}`, {
         method: "GET",
         headers: {

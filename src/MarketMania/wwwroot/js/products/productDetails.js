@@ -1,24 +1,31 @@
-﻿function productDetails(language) {
+﻿function productDetails(language)
+{
     Alpine.data("productDetails", () => ({
         product: null,
         images: [],
         loading: false,
 
-        get: async function (id) {
+        get: async function (id)
+        {
             this.loading = true;
 
-            try {
+            try
+            {
                 const response = await getAsync(id, language);
                 const content = await response.json();
 
                 let errorMessage = GetErrorMessage(response.status, content);
-                if (errorMessage == null) {
+                if (errorMessage == null)
+                {
                     this.product = content;
 
-                    if (this.product.images && this.product.images.length > 0) {
-                        for (const image of this.product.images) {
+                    if (this.product.images && this.product.images.length > 0)
+                    {
+                        for (const image of this.product.images)
+                        {
                             const imageResponse = await getImageAsync(id, image.id, language);
-                            if (!imageResponse.ok) {
+                            if (!imageResponse.ok)
+                            {
                                 const imageContent = await imageResponse.json();
                                 errorMessage = GetErrorMessage(imageResponse.status, imageContent);
 
@@ -32,11 +39,13 @@
                         }
                     }
                 }
-                else {
+                else
+                {
                     alert(errorMessage);
                 }
             }
-            catch (error) {
+            catch (error)
+            {
                 console.error(error);
             }
             finally {
@@ -46,7 +55,8 @@
     }));
 }
 
-async function getAsync(id, language) {
+async function getAsync(id, language)
+{
     const response = await fetch(`/api/products/${id}`, {
         method: "GET",
         headers: {
@@ -57,7 +67,8 @@ async function getAsync(id, language) {
     return response;
 }
 
-async function getImageAsync(productId, imageId, language) {
+async function getImageAsync(productId, imageId, language)
+{
     const response = await fetch(`/api/products/${productId}/images/${imageId}`, {
         method: "GET",
         headers: {

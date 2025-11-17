@@ -1,4 +1,5 @@
-﻿function uuid() {
+﻿function uuid()
+{
     const now = BigInt(Date.now());
     const timestamp = now & BigInt("0xffffffffffff");
 
@@ -19,7 +20,8 @@
     return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
-function dataURIToBlob(dataURI) {
+function dataURIToBlob(dataURI)
+{
     const splitDataURI = dataURI.split(',')
     const byteString = splitDataURI[0].indexOf('base64') >= 0 ? atob(splitDataURI[1]) : decodeURI(splitDataURI[1])
     const mimeString = splitDataURI[0].split(':')[1].split(';')[0]
@@ -31,24 +33,31 @@ function dataURIToBlob(dataURI) {
     return new Blob([ia], { type: mimeString })
 }
 
-function GetErrorMessage(statusCode, content) {
+function GetErrorMessage(statusCode, content)
+{
     if (statusCode >= 200 && statusCode <= 299)
+    {
         return null;
+    }
 
-    if (content.errors) {
+    if (content.errors)
+    {
         return `${content.title ?? content} (${content.errors[0].message})`;
     }
 
     return content.detail ?? content.title ?? content;
 }
 
-function sleep(time) {
-    return new Promise((resolve) => {
+function sleep(time)
+{
+    return new Promise((resolve) =>
+    {
         setTimeout(resolve, time);
     });
 }
 
-async function copyToClipboard(element, text) {
+async function copyToClipboard(element, text)
+{
 
     let tooltip = bootstrap.Tooltip.getInstance(element);
     tooltip.hide();
@@ -68,8 +77,10 @@ async function copyToClipboard(element, text) {
     new bootstrap.Tooltip(element);
 }
 
-function setAuthCookie(name, value, isPersistent) {
-    let cookie = `${name}=${value}; path=/; Secure; SameSite=Strict`;
+function setAuthCookie(name, accessToken, refreshToken, isPersistent)
+{
+    window.localStorage.setItem('refresh_token', refreshToken);
+    let cookie = `${name}=${accessToken}; path=/; Secure; SameSite=Strict`;
 
     if (isPersistent) {
         const expirationDays = 7;
