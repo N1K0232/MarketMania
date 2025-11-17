@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using MarketMania.Authentication;
 using MarketMania.Authentication.DataProtection.Interfaces;
 using MarketMania.Authentication.Entities;
@@ -21,29 +23,9 @@ public class JwtBearerTokenGenerator(UserManager<ApplicationUser> userManager, I
 
     public async Task<string> GenerateAccessTokenAsync(ApplicationUser user, CancellationToken cancellationToken = default)
     {
-        await userManager.UpdateSecurityStampAsync(user).ConfigureAwait(false);
-        var userRoles = await userManager.GetRolesAsync(user).ConfigureAwait(false);
+        var claims = await GetOrCreateClaimsAsync(user, cancellationToken).ConfigureAwait(false);  
+        var token = await jwtBearerService.CreateTokenAsync(user.UserName!, claims).ConfigureAwait(false);
 
-        var hostName = Dns.GetHostName();
-        var addresses = await Dns.GetHostAddressesAsync(hostName, cancellationToken).ConfigureAwait(false);
-
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email!),
-            new Claim(ClaimTypes.GivenName, user.FirstName),
-            new Claim(ClaimTypes.Surname, user.LastName ?? string.Empty),
-            new Claim(JwtRegisteredClaimNames.GivenName, user.FirstName),
-            new Claim(JwtRegisteredClaimNames.FamilyName, user.LastName ?? string.Empty),
-            new Claim(ClaimTypes.SerialNumber, user.SecurityStamp!),
-            new Claim(CustomClaimTypes.PermitLimit, RequestPerWindow.ToString()),
-            new Claim(CustomClaimTypes.Window, WindowMinutes.ToString()),
-            new Claim(ClaimTypes.Dns, hostName)
-        }
-        .Union(userRoles.Select(role => new Claim(ClaimTypes.Role, role)))
-        .Union(addresses.Select(address => new Claim(ClaimTypes.Dns, address.ToString())));
-
-        var token = await jwtBearerService.CreateTokenAsync(user.UserName!, [.. claims]).ConfigureAwait(false);
         return token;
     }
 
@@ -66,5 +48,39 @@ public class JwtBearerTokenGenerator(UserManager<ApplicationUser> userManager, I
     {
         var validationResult = await jwtBearerService.TryValidateTokenAsync(accessToken, false).ConfigureAwait(false);
         return validationResult.IsValid ? validationResult.Principal : null;
+    }
+
+    private async Task<IList<Claim>> GetOrCreateClaimsAsync(ApplicationUser user, CancellationToken cancellationToken)
+    {
+        var userClaims = await userManager.GetClaimsAsync(user).ConfigureAwait(false);
+        if (userClaims.Count > 0)
+        {
+            return userClaims;
+        }
+
+        await userManager.UpdateSecurityStampAsync(user).ConfigureAwait(false);
+        var userRoles = await userManager.GetRolesAsync(user).ConfigureAwait(false);
+
+        var hostName = Dns.GetHostName();
+        var addresses = await Dns.GetHostAddressesAsync(hostName, cancellationToken).ConfigureAwait(false);
+
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email!),
+            new Claim(ClaimTypes.GivenName, user.FirstName),
+            new Claim(ClaimTypes.Surname, user.LastName ?? string.Empty),
+            new Claim(JwtRegisteredClaimNames.GivenName, user.FirstName),
+            new Claim(JwtRegisteredClaimNames.FamilyName, user.LastName ?? string.Empty),
+            new Claim(ClaimTypes.SerialNumber, user.SecurityStamp!),
+            new Claim(CustomClaimTypes.PermitLimit, RequestPerWindow.ToString()),
+            new Claim(CustomClaimTypes.Window, WindowMinutes.ToString()),
+            new Claim(ClaimTypes.Dns, hostName)
+        }
+        .Union(userRoles.Select(role => new Claim(ClaimTypes.Role, role)))
+        .Union(addresses.Select(address => new Claim(ClaimTypes.Dns, address.ToString())));
+
+        await userManager.AddClaimsAsync(user, claims).ConfigureAwait(false);
+        return [.. claims];
     }
 }
