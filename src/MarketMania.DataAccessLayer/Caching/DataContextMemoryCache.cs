@@ -38,4 +38,12 @@ public class DataContextMemoryCache(IMemoryCache cache, ILogger<DataContextMemor
 
         return Task.CompletedTask;
     }
+
+    public Task SetAsync<T>(string key, IEnumerable<T> values, CancellationToken cancellationToken = default) where T : BaseEntity
+    {
+        logger.LogInformation("Adding a list of items in cache");
+        cache.Set(key, values);
+
+        return Task.CompletedTask;
+    }
 }

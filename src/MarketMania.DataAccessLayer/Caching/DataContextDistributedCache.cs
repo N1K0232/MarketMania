@@ -48,7 +48,9 @@ public class DataContextDistributedCache(IDistributedCache cache, ILogger<DataCo
     {
         try
         {
+            logger.LogInformation("getting list of items from cache");
             var content = await cache.GetStringAsync(key, cancellationToken).ConfigureAwait(false);
+
             if (content is null)
             {
                 return null;
@@ -68,12 +70,30 @@ public class DataContextDistributedCache(IDistributedCache cache, ILogger<DataCo
     {
         try
         {
+            logger.LogInformation("storing a new item in the cache");
+
             var content = JsonSerializer.Serialize(value);
             await cache.SetStringAsync(value.Id.ToString(), content, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "An error occurred while storing a new item in the cache");
+            throw;
+        }
+    }
+
+    public async Task SetAsync<T>(string key, IEnumerable<T> values, CancellationToken cancellationToken = default) where T : BaseEntity
+    {
+        try
+        {
+            logger.LogInformation("storing a list of items in the cache");
+
+            var content = JsonSerializer.Serialize(values);
+            await cache.SetStringAsync(key, content, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while storing a new list of items in the cache");
             throw;
         }
     }

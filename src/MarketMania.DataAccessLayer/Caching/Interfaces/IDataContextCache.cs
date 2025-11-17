@@ -15,11 +15,5 @@ public interface IDataContextCache
 
     Task SetAsync<T>(T value, CancellationToken cancellationToken = default) where T : BaseEntity;
 
-    async Task SetAsync<T>(IEnumerable<T> values, CancellationToken cancellationToken = default) where T : BaseEntity
-    {
-        foreach (var value in values)
-        {
-            await SetAsync(value, cancellationToken).ConfigureAwait(false);
-        }
-    }
+    Task SetAsync<T>(string key, IEnumerable<T> values, CancellationToken cancellationToken = default) where T : BaseEntity;
 }
