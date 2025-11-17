@@ -2,39 +2,79 @@
 using MarketMania.DataAccessLayer.Caching.Interfaces;
 using MarketMania.DataAccessLayer.Entities.Common;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 
 namespace MarketMania.DataAccessLayer.Caching;
 
-public class DataContextDistributedCache(IDistributedCache cache) : IDataContextCache
+public class DataContextDistributedCache(IDistributedCache cache, ILogger<DataContextDistributedCache> logger) : IDataContextCache
 {
-    public Task RemoveAsync(string key, CancellationToken cancellationToken = default)
-        => cache.RemoveAsync(key, cancellationToken);
+    public async Task RemoveAsync(string key, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            logger.LogInformation("clearing cache");
+            await cache.RemoveAsync(key, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while removing data from cache");
+            throw;
+        }
+    }
 
     public async Task<T?> GetAsync<T>(Guid id, CancellationToken cancellationToken = default) where T : BaseEntity
     {
-        var entity = await cache.GetStringAsync(id.ToString(), cancellationToken).ConfigureAwait(false);
-        if (entity is null)
+        try
         {
-            return null;
-        }
+            logger.LogInformation("getting item from cache");
+            var content = await cache.GetStringAsync(id.ToString(), cancellationToken).ConfigureAwait(false);
 
-        return JsonSerializer.Deserialize<T>(entity);
+            if (content is null)
+            {
+                return null;
+            }
+
+            var entity = JsonSerializer.Deserialize<T>(content);
+            return entity;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while getting the specified element from the cache");
+            throw;
+        }
     }
 
     public async Task<IEnumerable<T>?> GetListAsync<T>(string key, CancellationToken cancellationToken = default) where T : BaseEntity
     {
-        var entities = await cache.GetStringAsync(key, cancellationToken).ConfigureAwait(false);
-        if (entities is null)
+        try
         {
-            return null;
-        }
+            var content = await cache.GetStringAsync(key, cancellationToken).ConfigureAwait(false);
+            if (content is null)
+            {
+                return null;
+            }
 
-        return JsonSerializer.Deserialize<IEnumerable<T>>(entities);
+            var entities = JsonSerializer.Deserialize<IEnumerable<T>>(content);
+            return entities;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while getting the list of items from the cache");
+            throw;
+        }
     }
 
-    public Task SetAsync<T>(T value, CancellationToken cancellationToken = default) where T : BaseEntity
+    public async Task SetAsync<T>(T value, CancellationToken cancellationToken = default) where T : BaseEntity
     {
-        var content = JsonSerializer.Serialize(value);
-        return cache.SetStringAsync(value.Id.ToString(), content, cancellationToken);
+        try
+        {
+            var content = JsonSerializer.Serialize(value);
+            await cache.SetStringAsync(value.Id.ToString(), content, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while storing a new item in the cache");
+            throw;
+        }
     }
 }

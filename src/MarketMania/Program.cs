@@ -161,7 +161,11 @@ builder.Services.AddPdfSmith(builder.Configuration);
 builder.Services.AddDbContext<IApplicationDbContext, ApplicationDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("SqlConnection");
-    options.UseSqlServer(connectionString);
+    options.UseSqlServer(connectionString, sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(settings.MaxRetryCount, settings.MaxRetryDelay, null);
+        sqlOptions.CommandTimeout(settings.CommandTimeout);
+    });
 });
 
 builder.Services.AddDistributedSqlServerCache(options =>
@@ -169,7 +173,7 @@ builder.Services.AddDistributedSqlServerCache(options =>
     options.ConnectionString = builder.Configuration.GetConnectionString("SqlConnection");
     options.SchemaName = "dbo";
     options.TableName = "CacheStore";
-    options.DefaultSlidingExpiration = TimeSpan.FromHours(1);
+    options.DefaultSlidingExpiration = settings.DefaultSlidingExpiration;
 });
 
 builder.Services.AddSingleton<IDataContextCache, DataContextDistributedCache>();
@@ -255,14 +259,14 @@ if (azureStorageConnectionString.HasValue())
     builder.Services.AddAzureStorage(options =>
     {
         options.ConnectionString = azureStorageConnectionString;
-        options.ContainerName = settings.StorageFolder;
+        options.ContainerName = settings.StorageFolder ?? string.Empty;
     });
 }
 else
 {
     builder.Services.AddFileSystemStorage(options =>
     {
-        options.StorageFolder = settings.StorageFolder;
+        options.StorageFolder = settings.StorageFolder ?? AppContext.BaseDirectory;
     });
 }
 
