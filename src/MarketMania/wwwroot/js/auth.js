@@ -1,4 +1,5 @@
-﻿function auth(language) {
+﻿function auth(language)
+{
     Alpine.data("auth", () => ({
         firstName: '',
         lastName: '',
@@ -13,124 +14,189 @@
         isBusy: false,
         errorMessage: '',
 
-        getQRCode: async function () {
+        getQRCode: async function ()
+        {
             this.isBusy = true;
 
-            try {
+            try
+            {
                 const token = window.localStorage.getItem('2fa_token');
                 const response = await getQRCodeAsync(token, language);
 
-                if (response.status === 400) {
-
+                if (response.status === 400)
+                {
                 }
-                else {
+                else
+                {
                     const blob = await response.blob();
                     this.qrCodeSrc = URL.createObjectURL(blob);
                 }
             }
-            catch (error) {
+            catch (error)
+            {
                 this.errorMessage = error.message;
             }
-            finally {
+            finally
+            {
                 this.isBusy = false;
             }
         },
 
-        login: async function () {
+        login: async function ()
+        {
             this.isBusy = true;
 
-            try {
+            try
+            {
                 const response = await loginAsync(this.email, this.password, this.isPersistent, language);
                 const content = await response.json();
 
                 this.errorMessage = GetErrorMessage(response.status, content);
-                if (this.errorMessage == null) {
-                    if (content.token.startsWith('eyJ')) {
-                        setAuthCookie('jwtBearer', content.token, this.isPersistent);
+                if (this.errorMessage == null)
+                {
+                    if (content.accessToken != null && content.refreshToken != null)
+                    {
+                        setAuthCookie('jwtBearer', content.accessToken, content.refreshToken, this.isPersistent);
                     }
-                    else {
-                        window.localStorage.setItem('2fa_token', content.token);
+                    else
+                    {
+                        window.localStorage.setItem('2fa_token', content.twoFactorToken);
                         window.location.href = '/Account/TwoFactorCode';
                     }
                 }
             }
-            catch (error) {
+            catch (error)
+            {
                 this.errorMessage = error.message;
             }
-            finally {
+            finally
+            {
                 this.isBusy = false;
             }
         },
 
-        logout: async function () {
+        logout: async function ()
+        {
             this.isBusy = true;
 
-            try {
+            try
+            {
                 const response = await logoutAsync(language);
-                const content = await content.json();
+                const content = await response.json();
 
                 this.errorMessage = GetErrorMessage(response.status, content);
-                if (this.errorMessage == null) {
+                if (this.errorMessage == null)
+                {
                     window.location.href = '/';
                 }
             }
-            catch (error) {
+            catch (error)
+            {
                 this.errorMessage = error.message;
             }
-            finally {
+            finally
+            {
                 this.isBusy = false;
             }
         },
 
-        next: function () {
+        next: function ()
+        {
             window.location.href = '/Account/ValidateTwoFactor';
         },
 
-        register: async function () {
+        refreshToken: async function ()
+        {
             this.isBusy = true;
 
-            try {
+            try
+            {
+                const accessToken = window.localStorage.getItem('access_token');
+                const refreshToken = window.localStorage.getItem('refresh_token');
+
+                const response = await refreshTokenAsync(accessToken, refreshToken, language);
+                const content = await response.json();
+
+                this.errorMessage = GetErrorMessage(response.status, content);
+                if(this.errorMessage == null)
+                {
+                    if (content.accessToken != null && content.refreshToken != null)
+                    {
+                        setAuthCookie('jwtBearer', content.accessToken, content.refreshToken, this.isPersistent);
+                    }
+                    else
+                    {
+                        window.localStorage.setItem('2fa_token', content.twoFactorToken);
+                        window.location.href = '/Account/TwoFactorCode';
+                    }
+                }
+            }
+            catch(error)
+            {
+                this.errorMessage = error.message;
+            }
+            finally
+            {
+                this.isBusy = false;
+            }
+        },
+
+        register: async function ()
+        {
+            this.isBusy = true;
+
+            try
+            {
                 const response = await registerAsync(this.firstName, this.lastName, this.email, this.password, this.userName, this.enableNotifications, language);
                 const content = await response.json();
 
                 this.errorMessage = GetErrorMessage(response.status, content);
-                if (this.errorMessage == null) {
+                if (this.errorMessage == null)
+                {
                     window.location.href = '/';
                 }
             }
-            catch (error) {
+            catch (error)
+            {
                 this.errorMessage = error.message;
             }
-            finally {
+            finally
+            {
                 this.isBusy = false;
             }
         },
 
-        validateTwoFactor: async function () {
+        validateTwoFactor: async function ()
+        {
             this.isBusy = true;
 
-            try {
+            try
+            {
                 const response = await validateTwoFactorAsync(this.twoFactorCode, language);
                 const content = await response.json();
 
                 this.errorMessage = GetErrorMessage(response.status, content);
-                if (this.errorMessage == null) {
+                if (this.errorMessage == null)
+                {
                     window.localStorage.removeItem('2fa_token');
-                    window.localStorage.setItem('access_token', content.token);
+                    setAuthCookie('jwtBearer', content.accessToken, content.refreshToken, this.isPersistent);
                     window.location.href = '/';
                 }
             }
-            catch (error) {
+            catch (error)
+            {
                 this.errorMessage = error.message;
             }
-            finally {
+            finally
+            {
                 this.isBusy = false;
             }
         }
     }));
 }
 
-async function getQRCodeAsync(token, language) {
+async function getQRCodeAsync(token, language)
+{
     const response = await fetch(`/api/auth/qrcode?token=${token}`, {
         method: "GET",
         headers: {
@@ -141,7 +207,8 @@ async function getQRCodeAsync(token, language) {
     return response;
 }
 
-async function loginAsync(email, password, isPersistent, language) {
+async function loginAsync(email, password, isPersistent, language)
+{
     const request = {
         email: email,
         password: password,
@@ -160,7 +227,8 @@ async function loginAsync(email, password, isPersistent, language) {
     return response;
 }
 
-async function logoutAsync(language) {
+async function logoutAsync(language)
+{
     const response = await fetch('/api/auth/logout', {
         method: "POST",
         headers: {
@@ -171,7 +239,27 @@ async function logoutAsync(language) {
     return response;
 }
 
-async function registerAsync(firstName, lastName, email, password, userName, enableNotifications, language) {
+async function refreshTokenAsync(accessToken, refreshToken, language)
+{
+    const request = {
+        accessToken: accessToken,
+        refreshToken: refreshToken
+    };
+
+    const response = await fetch('/api/auth/refresh', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept-Language": language
+        },
+        body: JSON.stringify(request)
+    });
+
+    return response;
+}
+
+async function registerAsync(firstName, lastName, email, password, userName, enableNotifications, language)
+{
     const request = {
         firstName: firstName,
         lastName: lastName,

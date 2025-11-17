@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using MarketMania.Authentication;
+using MarketMania.Authentication.DataProtection.Interfaces;
 using MarketMania.Authentication.Entities;
 using MarketMania.BusinessLayer.Generators.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -12,12 +14,12 @@ using SimpleAuthentication.JwtBearer;
 
 namespace MarketMania.BusinessLayer.Generators;
 
-public class JwtBearerTokenGenerator(UserManager<ApplicationUser> userManager, IJwtBearerService jwtBearerService) : IJwtBearerTokenGenerator
+public class JwtBearerTokenGenerator(UserManager<ApplicationUser> userManager, IJwtBearerService jwtBearerService, IDataProtectionService dataProtectionService) : IJwtBearerTokenGenerator
 {
     private const int RequestPerWindow = 5;
     private const int WindowMinutes = 1;
 
-    public async Task<string> CreateTokenAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+    public async Task<string> GenerateAccessTokenAsync(ApplicationUser user, CancellationToken cancellationToken = default)
     {
         await userManager.UpdateSecurityStampAsync(user).ConfigureAwait(false);
         var userRoles = await userManager.GetRolesAsync(user).ConfigureAwait(false);
@@ -43,5 +45,26 @@ public class JwtBearerTokenGenerator(UserManager<ApplicationUser> userManager, I
 
         var token = await jwtBearerService.CreateTokenAsync(user.UserName!, [.. claims]).ConfigureAwait(false);
         return token;
+    }
+
+    public async Task<string> GenerateRefreshTokenAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+    {
+        using var generator = RandomNumberGenerator.Create();
+        var randomNumber = new byte[256];
+
+        generator.GetBytes(randomNumber);
+        var refreshToken = await dataProtectionService.ProtectAsync(Convert.ToBase64String(randomNumber), cancellationToken).ConfigureAwait(false);
+
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpirationDate = DateTimeOffset.UtcNow.AddHours(4);
+
+        await userManager.UpdateAsync(user).ConfigureAwait(false);
+        return refreshToken;
+    }
+
+    public async Task<ClaimsPrincipal?> ValidateAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default)
+    {
+        var validationResult = await jwtBearerService.TryValidateTokenAsync(accessToken, false).ConfigureAwait(false);
+        return validationResult.IsValid ? validationResult.Principal : null;
     }
 }

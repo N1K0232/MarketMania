@@ -34,6 +34,13 @@ public class AuthEndpoints : IEndpointRouteHandlerBuilder
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("logout");
 
+        authApiGroup.MapPost("refresh", RefreshTokenAsync)
+            .AllowAnonymous()
+            .WithValidation<RefreshTokenRequest>()
+            .Produces(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status400BadRequest)
+            .WithName("refresh-token");
+
         authApiGroup.MapPost("register", RegisterAsync)
             .AllowAnonymous()
             .WithValidation<RegisterRequest>()
@@ -82,6 +89,14 @@ public class AuthEndpoints : IEndpointRouteHandlerBuilder
         var result = await identityService.RegisterAsync(request, httpContext.RequestAborted);
 
         var response = httpContext.CreateResponse(result, StatusCodes.Status201Created);
+        return response;
+    }
+
+    private static async Task<IResult> RefreshTokenAsync(RefreshTokenRequest request, IIdentityService identityService, HttpContext httpContext)
+    {
+        var result = await identityService.RefreshTokenAsync(request, httpContext.RequestAborted);
+
+        var response = httpContext.CreateResponse(result);
         return response;
     }
 

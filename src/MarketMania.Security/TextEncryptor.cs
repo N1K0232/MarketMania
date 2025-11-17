@@ -11,9 +11,8 @@ internal class TextEncryptor(IOptions<EncryptionOptions> optionsAccessor) : ITex
     public async Task<string> EncryptAsync(string plaintext, string password, CancellationToken cancellationToken = default)
     {
         var salt = RandomNumberGenerator.GetBytes(options.SaltSize);
-        using var kdf = new Rfc2898DeriveBytes(password, salt, options.Iterations, options.AlgorithmName);
+        var key = Rfc2898DeriveBytes.Pbkdf2(password, salt, options.Iterations, options.AlgorithmName, options.KeySize);
 
-        var key = kdf.GetBytes(options.KeySize);
         using var aes = Aes.Create();
 
         aes.Key = key;
@@ -71,12 +70,10 @@ internal class TextEncryptor(IOptions<EncryptionOptions> optionsAccessor) : ITex
         Buffer.BlockCopy(cipherData, pos, salt, 0, salt.Length);
         pos += salt.Length;
 
-        using var kdf = new Rfc2898DeriveBytes(password, salt, options.Iterations, options.AlgorithmName);
-        var key = kdf.GetBytes(options.KeySize);
-
+        var key = Rfc2898DeriveBytes.Pbkdf2(password, salt, options.Iterations, options.AlgorithmName, options.KeySize);
         using var aes = Aes.Create();
-        aes.Key = key;
 
+        aes.Key = key;
         aes.Mode = CipherMode.CBC;
         aes.Padding = PaddingMode.PKCS7;
 

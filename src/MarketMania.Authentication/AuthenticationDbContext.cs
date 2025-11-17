@@ -21,6 +21,7 @@ public abstract class AuthenticationDbContext(DbContextOptions options) : Identi
         {
             b.Property(u => u.FirstName).HasMaxLength(256).IsRequired();
             b.Property(u => u.LastName).HasMaxLength(256).IsRequired(false);
+            b.Property(u => u.RefreshToken).HasMaxLength(2048).IsRequired(false);
         });
 
         builder.Entity<ApplicationUserRole>(b =>

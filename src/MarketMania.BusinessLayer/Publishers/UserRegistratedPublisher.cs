@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using MarketMania.Authentication;
-using MarketMania.Authentication.DataProtection;
+using MarketMania.Authentication.DataProtection.Interfaces;
 using MarketMania.Authentication.Entities;
 using MarketMania.BusinessLayer.Resources;
 using MarketMania.Clients.Interfaces;

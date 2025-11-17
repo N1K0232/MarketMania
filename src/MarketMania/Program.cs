@@ -7,6 +7,7 @@ using Azure.Monitor.OpenTelemetry.AspNetCore;
 using FluentValidation;
 using MarketMania.Authentication;
 using MarketMania.Authentication.DataProtection;
+using MarketMania.Authentication.DataProtection.Interfaces;
 using MarketMania.Authentication.Entities;
 using MarketMania.BusinessLayer.Extensions;
 using MarketMania.BusinessLayer.Generators;
@@ -151,10 +152,9 @@ if (swagger.IsEnabled)
     });
 }
 
-builder.Services.AddSingleton<IDataProtectionService, DataProtectionService>();
 builder.Services.AddSingleton<IPageService, PageService>();
-
 builder.Services.AddEmailClient(builder.Configuration);
+
 builder.Services.AddSentimentApi(builder.Configuration);
 builder.Services.AddPdfSmith(builder.Configuration);
 
@@ -213,8 +213,16 @@ builder.Services.AddSingleton(services =>
     var dataProtectionProvider = services.GetRequiredService<IDataProtectionProvider>();
     var dataProtector = dataProtectionProvider.CreateProtector(settings.ApplicationName);
 
+    return dataProtector;
+});
+
+builder.Services.AddSingleton(services =>
+{
+    var dataProtector = services.GetRequiredService<IDataProtector>();
     return dataProtector.ToTimeLimitedDataProtector();
 });
+
+builder.Services.AddSingleton<IDataProtectionService, DataProtectionService>();
 
 //builder.Services.AddScoped<AuthenticationDbContext>(services => services.GetRequiredService<ApplicationDbContext>());
 //builder.Services.AddTransient<IApiKeyValidator, SubscriptionValidator>();

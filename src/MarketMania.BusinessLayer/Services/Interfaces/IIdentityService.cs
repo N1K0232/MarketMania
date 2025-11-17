@@ -12,6 +12,8 @@ public interface IIdentityService
 
     Task<Result> LogoutAsync(CancellationToken cancellationToken);
 
+    Task<Result<AuthResponse>> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken);
+
     Task<Result> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken);
 
     Task<Result<AuthResponse>> ValidateTwoFactorAsync(TwoFactorValidationRequest request, CancellationToken cancellationToken);

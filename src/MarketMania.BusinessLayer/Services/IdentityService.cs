@@ -1,9 +1,10 @@
 ﻿using System.Net.Mime;
 using System.Net.Sockets;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using AutoMapper;
-using MarketMania.Authentication.DataProtection;
+using MarketMania.Authentication.DataProtection.Interfaces;
 using MarketMania.Authentication.Entities;
 using MarketMania.BusinessLayer.Generators.Interfaces;
 using MarketMania.BusinessLayer.Services.Interfaces;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using OperationResults;
+using SimpleAuthentication;
 using SimpleTransit;
 using TinyHelpers.Extensions;
 
@@ -71,8 +73,10 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
             return Result.Fail(FailureReasons.ClientError, "Couldn't sign in", "Invalid email or password");
         }
 
-        var accessToken = await jwtBearerTokenGenerator.CreateTokenAsync(user, cancellationToken);
-        return new AuthResponse(accessToken);
+        var accessToken = await jwtBearerTokenGenerator.GenerateAccessTokenAsync(user, cancellationToken);
+        var refreshToken = await jwtBearerTokenGenerator.GenerateRefreshTokenAsync(user, cancellationToken);
+
+        return new AuthResponse(accessToken, refreshToken);
     }
 
     public async Task<Result> LogoutAsync(CancellationToken cancellationToken)
@@ -81,6 +85,32 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
         await signInManager.Context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
         return Result.Ok();
+    }
+
+    public async Task<Result<AuthResponse>> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken)
+    {
+        var user = await jwtBearerTokenGenerator.ValidateAccessTokenAsync(request.AccessToken, cancellationToken);
+        if (user is null)
+        {
+            return Result.Fail(FailureReasons.ClientError, "Invalid access token");
+        }
+
+        var dbUser = await userManager.FindByIdAsync(user.GetClaimValue(ClaimTypes.NameIdentifier)!);
+        if (dbUser?.RefreshToken is null || dbUser?.RefreshTokenExpirationDate < DateTimeOffset.UtcNow || dbUser?.RefreshToken != request.RefreshToken)
+        {
+            return Result.Fail(FailureReasons.ClientError, "Invalid refresh token");
+        }
+
+        if(dbUser.TwoFactorEnabled)
+        {
+            var twoFactorToken = await dataProtectionService.ProtectAsync(dbUser.Id.ToString(), TimeSpan.FromMinutes(15), cancellationToken);
+            return new AuthResponse(twoFactorToken);
+        }
+
+        var accessToken = await jwtBearerTokenGenerator.GenerateAccessTokenAsync(dbUser, cancellationToken);
+        var refreshToken = await jwtBearerTokenGenerator.GenerateRefreshTokenAsync(dbUser, cancellationToken);
+
+        return new AuthResponse(accessToken, refreshToken);
     }
 
     public async Task<Result> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
@@ -130,8 +160,10 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
             return Result.Fail(FailureReasons.ClientError, "Invalid two factor code");
         }
 
-        var accessToken = await jwtBearerTokenGenerator.CreateTokenAsync(user, cancellationToken);
-        return new AuthResponse(accessToken);
+        var accessToken = await jwtBearerTokenGenerator.GenerateAccessTokenAsync(user, cancellationToken);
+        var refreshToken = await jwtBearerTokenGenerator.GenerateRefreshTokenAsync(user, cancellationToken);
+
+        return new AuthResponse(accessToken, refreshToken);
     }
 
     public async Task<Result> VerifyEmailAsync(string secret, string token, CancellationToken cancellationToken)
