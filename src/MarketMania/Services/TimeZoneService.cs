@@ -1,4 +1,5 @@
 ﻿using MarketMania.Contracts;
+using TinyHelpers.Extensions;
 
 namespace MarketMania.Services;
 
@@ -9,12 +10,12 @@ public class TimeZoneService(IHttpContextAccessor httpContextAccessor) : ITimeZo
     public TimeZoneInfo? GetTimeZone()
     {
         var timeZoneId = GetTimeZoneHeaderValueCore();
-        if (timeZoneId is null || !TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId, out var timeZoneInfo))
+        if (timeZoneId.HasValue() && TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId, out var timeZoneInfo))
         {
-            return null;
+            return timeZoneInfo;
         }
 
-        return timeZoneInfo;
+        return null;
     }
 
     public string? GetTimeZoneHeaderValue()
