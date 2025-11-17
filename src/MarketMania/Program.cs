@@ -223,6 +223,7 @@ builder.Services.AddSingleton(services =>
 });
 
 builder.Services.AddSingleton<IDataProtectionService, DataProtectionService>();
+builder.Services.AddSingleton<ITimeLimitedDataProtectionService, TimeLimitedDataProtectionService>();
 
 //builder.Services.AddScoped<AuthenticationDbContext>(services => services.GetRequiredService<ApplicationDbContext>());
 //builder.Services.AddTransient<IApiKeyValidator, SubscriptionValidator>();

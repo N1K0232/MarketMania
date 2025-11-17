@@ -22,7 +22,7 @@ using TinyHelpers.Extensions;
 
 namespace MarketMania.BusinessLayer.Services;
 
-public class IdentityService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtBearerTokenGenerator jwtBearerTokenGenerator, INotificationPublisher notificationPublisher, IQRCodeGenerator qrCodeGenerator, IDataProtectionService dataProtectionService, IMapper mapper) : IIdentityService
+public class IdentityService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtBearerTokenGenerator jwtBearerTokenGenerator, INotificationPublisher notificationPublisher, IQRCodeGenerator qrCodeGenerator, ITimeLimitedDataProtectionService dataProtectionService, IMapper mapper) : IIdentityService
 {
     public async Task<Result<StreamFileContent>> GetQRCodeAsync(string token, CancellationToken cancellationToken)
     {

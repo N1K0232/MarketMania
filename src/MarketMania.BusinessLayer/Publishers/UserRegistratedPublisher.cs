@@ -13,7 +13,7 @@ using SimpleTransit;
 
 namespace MarketMania.BusinessLayer.Publishers;
 
-public class UserRegistratedPublisher(UserManager<ApplicationUser> userManager, IDataProtectionService dataProtectionService, IEmailClient emailClient, IPageService pageService) : INotificationHandler<UserRegistrated>, INotificationHandler<UserVerified>
+public class UserRegistratedPublisher(UserManager<ApplicationUser> userManager, ITimeLimitedDataProtectionService dataProtectionService, IEmailClient emailClient, IPageService pageService) : INotificationHandler<UserRegistrated>, INotificationHandler<UserVerified>
 {
     public async Task HandleAsync(UserRegistrated message, CancellationToken cancellationToken)
     {
