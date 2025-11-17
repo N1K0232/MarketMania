@@ -17,22 +17,19 @@ public class SupplierEndpoints : IEndpointRouteHandlerBuilder
             .RequireAuthorization("Admin")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("DeleteSupplier")
-            .WithOpenApi();
+            .WithName("DeleteSupplier");
 
         suppliersApiGroup.MapGet("{id:guid}", GetAsync)
             .AllowAnonymous()
             .Produces<Supplier>()
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("GetSupplier")
-            .WithOpenApi();
+            .WithName("GetSupplier");
 
         suppliersApiGroup.MapGet(string.Empty, GetListAsync)
             .AllowAnonymous()
             .Produces<IEnumerable<Supplier>>()
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("GetSuppliers")
-            .WithOpenApi();
+            .WithName("GetSuppliers");
 
         suppliersApiGroup.MapPost(string.Empty, InsertAsync)
             .RequireAuthorization("Admin")
@@ -40,19 +37,17 @@ public class SupplierEndpoints : IEndpointRouteHandlerBuilder
             .Produces<Supplier>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status409Conflict)
-            .WithName("InsertSupplier")
-            .WithOpenApi();
+            .WithName("InsertSupplier");
 
         suppliersApiGroup.MapPut("{id:guid}", UpdateAsync)
             .RequireAuthorization("Admin")
             .WithValidation<SaveSupplierRequest>()
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("UpdateSupplier")
-            .WithOpenApi();
+            .WithName("UpdateSupplier");
     }
 
-    public static async Task<IResult> DeleteAsync(Guid id, ISupplierService supplierService, HttpContext httpContext)
+    private static async Task<IResult> DeleteAsync(Guid id, ISupplierService supplierService, HttpContext httpContext)
     {
         var result = await supplierService.DeleteAsync(id, httpContext.RequestAborted);
 
@@ -60,7 +55,7 @@ public class SupplierEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetAsync(Guid id, ISupplierService supplierService, HttpContext httpContext)
+    private static async Task<IResult> GetAsync(Guid id, ISupplierService supplierService, HttpContext httpContext)
     {
         var result = await supplierService.GetAsync(id, httpContext.RequestAborted);
 
@@ -68,7 +63,7 @@ public class SupplierEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetListAsync(string? name, ISupplierService supplierService, HttpContext httpContext)
+    private static async Task<IResult> GetListAsync(string? name, ISupplierService supplierService, HttpContext httpContext)
     {
         var result = await supplierService.GetListAsync(name, httpContext.RequestAborted);
 
@@ -76,7 +71,7 @@ public class SupplierEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> InsertAsync(SaveSupplierRequest request, ISupplierService supplierService, HttpContext httpContext)
+    private static async Task<IResult> InsertAsync(SaveSupplierRequest request, ISupplierService supplierService, HttpContext httpContext)
     {
         var result = await supplierService.InsertAsync(request, httpContext.RequestAborted);
 
@@ -84,7 +79,7 @@ public class SupplierEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> UpdateAsync(Guid id, SaveSupplierRequest request, ISupplierService supplierService, HttpContext httpContext)
+    private static async Task<IResult> UpdateAsync(Guid id, SaveSupplierRequest request, ISupplierService supplierService, HttpContext httpContext)
     {
         var result = await supplierService.UpdateAsync(id, request, httpContext.RequestAborted);
 

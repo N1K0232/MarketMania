@@ -5,7 +5,7 @@ using System.Text;
 using AutoMapper;
 using MarketMania.Authentication.DataProtection;
 using MarketMania.Authentication.Entities;
-using MarketMania.Authentication.Generators.Interfaces;
+using MarketMania.BusinessLayer.Generators.Interfaces;
 using MarketMania.BusinessLayer.Services.Interfaces;
 using MarketMania.Shared.Models;
 using MarketMania.Shared.Models.Notifications;
@@ -20,7 +20,7 @@ using TinyHelpers.Extensions;
 
 namespace MarketMania.BusinessLayer.Services;
 
-public class IdentityService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ITokenGenerator tokenGenerator, INotificationPublisher notificationPublisher, IQRCodeGenerator qrCodeGenerator, IDataProtectionService dataProtectionService, IMapper mapper) : IIdentityService
+public class IdentityService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtBearerTokenGenerator jwtBearerTokenGenerator, INotificationPublisher notificationPublisher, IQRCodeGenerator qrCodeGenerator, IDataProtectionService dataProtectionService, IMapper mapper) : IIdentityService
 {
     public async Task<Result<StreamFileContent>> GetQRCodeAsync(string token, CancellationToken cancellationToken)
     {
@@ -41,11 +41,8 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
             return Result.Fail(FailureReasons.ClientError);
         }
 
-        await userManager.ResetAuthenticatorKeyAsync(user);
-        var secret = await userManager.GetAuthenticatorKeyAsync(user);
-
-        var stream = await qrCodeGenerator.GenerateAsync(user.Email!, secret, cancellationToken);
-        return new StreamFileContent(stream, MediaTypeNames.Image.Png);
+        var qrCodeStream = await qrCodeGenerator.GenerateAsync(user, cancellationToken);
+        return new StreamFileContent(qrCodeStream, MediaTypeNames.Image.Png);
     }
 
     public async Task<Result<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
@@ -74,7 +71,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
             return Result.Fail(FailureReasons.ClientError, "Couldn't sign in", "Invalid email or password");
         }
 
-        var accessToken = await tokenGenerator.GenerateAccessTokenAsync(user, cancellationToken);
+        var accessToken = await jwtBearerTokenGenerator.CreateTokenAsync(user, cancellationToken);
         return new AuthResponse(accessToken);
     }
 
@@ -133,7 +130,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
             return Result.Fail(FailureReasons.ClientError, "Invalid two factor code");
         }
 
-        var accessToken = await tokenGenerator.GenerateAccessTokenAsync(user, cancellationToken);
+        var accessToken = await jwtBearerTokenGenerator.CreateTokenAsync(user, cancellationToken);
         return new AuthResponse(accessToken);
     }
 

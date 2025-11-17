@@ -8,8 +8,6 @@ using FluentValidation;
 using MarketMania.Authentication;
 using MarketMania.Authentication.DataProtection;
 using MarketMania.Authentication.Entities;
-using MarketMania.Authentication.Generators;
-using MarketMania.Authentication.Generators.Interfaces;
 using MarketMania.BusinessLayer.Extensions;
 using MarketMania.BusinessLayer.Generators;
 using MarketMania.BusinessLayer.Publishers;
@@ -36,7 +34,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using MinimalHelpers.Routing;
 using MinimalHelpers.Validation;
 using OperationResults.AspNetCore.Http;
@@ -128,19 +126,19 @@ builder.Services.ConfigureValidation(options =>
     options.ErrorResponseFormat = ValidationErrorResponseFormat.List;
 });
 
-builder.Services.AddOpenApiOperationParameters(options =>
-{
-    options.Parameters.Add(new()
-    {
-        Name = TimeZoneService.HeaderKey,
-        In = ParameterLocation.Header,
-        Required = false,
-        Schema = OpenApiSchemaHelper.CreateStringSchema()
-    });
-});
-
 if (swagger.IsEnabled)
 {
+    builder.Services.AddOpenApiOperationParameters(options =>
+    {
+        options.Parameters.Add(new()
+        {
+            Name = TimeZoneService.HeaderKey,
+            In = ParameterLocation.Header,
+            Required = false,
+            Schema = OpenApiSchemaHelper.CreateStringSchema()
+        });
+    });
+
     builder.Services.AddOpenApi(options =>
     {
         options.RemoveServerList();
@@ -154,10 +152,7 @@ if (swagger.IsEnabled)
 }
 
 builder.Services.AddSingleton<IDataProtectionService, DataProtectionService>();
-builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
-
 builder.Services.AddSingleton<IPageService, PageService>();
-builder.Services.AddSingleton<IQRCodeGenerator, QRCodeHandlerGenerator>();
 
 builder.Services.AddEmailClient(builder.Configuration);
 builder.Services.AddSentimentApi(builder.Configuration);
@@ -340,7 +335,9 @@ app.UseWhen(context => context.IsApiRequest(), builder =>
 {
     builder.UseAuthentication();
     builder.UseAuthorization();
+
     builder.UseRateLimiter();
+    builder.UseRequestTimeouts();
 });
 
 app.MapRazorPages();

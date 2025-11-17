@@ -17,22 +17,19 @@ public class CategoryEndpoints : IEndpointRouteHandlerBuilder
             .RequireAuthorization("Admin")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("DeleteCategory")
-            .WithOpenApi();
+            .WithName("DeleteCategory");
 
         categoriesApiGroup.MapGet("{id:guid}", GetAsync)
             .AllowAnonymous()
             .Produces<Category>()
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("GetCategory")
-            .WithOpenApi();
+            .WithName("GetCategory");
 
         categoriesApiGroup.MapGet(string.Empty, GetListAsync)
             .AllowAnonymous()
             .Produces<IEnumerable<Category>>()
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("GetCategories")
-            .WithOpenApi();
+            .WithName("GetCategories");
 
         categoriesApiGroup.MapPost(string.Empty, InsertAsync)
             .RequireAuthorization("Admin")
@@ -40,19 +37,17 @@ public class CategoryEndpoints : IEndpointRouteHandlerBuilder
             .Produces<Category>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status409Conflict)
-            .WithName("InsertCategory")
-            .WithOpenApi();
+            .WithName("InsertCategory");
 
         categoriesApiGroup.MapPut("{id:guid}", UpdateAsync)
             .RequireAuthorization("Admin")
             .WithValidation<SaveCategoryRequest>()
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("UpdateCategory")
-            .WithOpenApi();
+            .WithName("UpdateCategory");
     }
 
-    public static async Task<IResult> DeleteAsync(Guid id, ICategoryService categoryService, HttpContext httpContext)
+    private static async Task<IResult> DeleteAsync(Guid id, ICategoryService categoryService, HttpContext httpContext)
     {
         var result = await categoryService.DeleteAsync(id, httpContext.RequestAborted);
 
@@ -60,7 +55,7 @@ public class CategoryEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetAsync(Guid id, ICategoryService categoryService, HttpContext httpContext)
+    private static async Task<IResult> GetAsync(Guid id, ICategoryService categoryService, HttpContext httpContext)
     {
         var result = await categoryService.GetAsync(id, httpContext.RequestAborted);
 
@@ -68,7 +63,7 @@ public class CategoryEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetListAsync(string? name, ICategoryService categoryService, HttpContext httpContext)
+    private static async Task<IResult> GetListAsync(string? name, ICategoryService categoryService, HttpContext httpContext)
     {
         var result = await categoryService.GetListAsync(name, httpContext.RequestAborted);
 
@@ -76,7 +71,7 @@ public class CategoryEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> InsertAsync(SaveCategoryRequest request, ICategoryService categoryService, HttpContext httpContext)
+    private static async Task<IResult> InsertAsync(SaveCategoryRequest request, ICategoryService categoryService, HttpContext httpContext)
     {
         var result = await categoryService.InsertAsync(request, httpContext.RequestAborted);
 
@@ -84,7 +79,7 @@ public class CategoryEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> UpdateAsync(Guid id, SaveCategoryRequest request, ICategoryService categoryService, HttpContext httpContext)
+    private static async Task<IResult> UpdateAsync(Guid id, SaveCategoryRequest request, ICategoryService categoryService, HttpContext httpContext)
     {
         var result = await categoryService.UpdateAsync(id, request, httpContext.RequestAborted);
 

@@ -18,8 +18,7 @@ public class AuthEndpoints : IEndpointRouteHandlerBuilder
             .AllowAnonymous()
             .Produces(StatusCodes.Status200OK, contentType: MediaTypeNames.Image.Png)
             .Produces(StatusCodes.Status400BadRequest)
-            .WithName("qrcode")
-            .WithOpenApi();
+            .WithName("qrcode");
 
         authApiGroup.MapPost("login", LoginAsync)
             .AllowAnonymous()
@@ -27,39 +26,34 @@ public class AuthEndpoints : IEndpointRouteHandlerBuilder
             .Produces<AuthResponse>()
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status401Unauthorized)
-            .WithName("login")
-            .WithOpenApi();
+            .WithName("login");
 
         authApiGroup.MapPost("logout", LogoutAsync)
             .RequireAuthorization()
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)
-            .WithName("logout")
-            .WithOpenApi();
+            .WithName("logout");
 
         authApiGroup.MapPost("register", RegisterAsync)
             .AllowAnonymous()
             .WithValidation<RegisterRequest>()
             .Produces(StatusCodes.Status201Created)
-            .WithName("register")
-            .WithOpenApi();
+            .WithName("register");
 
         authApiGroup.MapPost("validate2fa", ValidateTwoFactorAsync)
             .AllowAnonymous()
             .WithValidation<TwoFactorValidationRequest>()
             .Produces<AuthResponse>()
-            .WithName("validate2fa")
-            .WithOpenApi();
+            .WithName("validate2fa");
 
         authApiGroup.MapGet("verifyemail", VerifyEmailAsync)
             .AllowAnonymous()
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)
-            .WithName("verifyemail")
-            .WithOpenApi();
+            .WithName("verifyemail");
     }
 
-    public static async Task<IResult> GetQRCodeAsync(string token, IIdentityService identityService, HttpContext httpContext)
+    private static async Task<IResult> GetQRCodeAsync(string token, IIdentityService identityService, HttpContext httpContext)
     {
         var result = await identityService.GetQRCodeAsync(token, httpContext.RequestAborted);
 
@@ -67,7 +61,7 @@ public class AuthEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> LoginAsync(LoginRequest request, IIdentityService identityService, HttpContext httpContext)
+    private static async Task<IResult> LoginAsync(LoginRequest request, IIdentityService identityService, HttpContext httpContext)
     {
         var result = await identityService.LoginAsync(request, httpContext.RequestAborted);
 
@@ -75,7 +69,7 @@ public class AuthEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> LogoutAsync(IIdentityService identityService, HttpContext httpContext)
+    private static async Task<IResult> LogoutAsync(IIdentityService identityService, HttpContext httpContext)
     {
         var result = await identityService.LogoutAsync(httpContext.RequestAborted);
 
@@ -83,7 +77,7 @@ public class AuthEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> RegisterAsync(RegisterRequest request, IIdentityService identityService, HttpContext httpContext)
+    private static async Task<IResult> RegisterAsync(RegisterRequest request, IIdentityService identityService, HttpContext httpContext)
     {
         var result = await identityService.RegisterAsync(request, httpContext.RequestAborted);
 
@@ -91,7 +85,7 @@ public class AuthEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> ValidateTwoFactorAsync(TwoFactorValidationRequest request, IIdentityService identityService, HttpContext httpContext)
+    private static async Task<IResult> ValidateTwoFactorAsync(TwoFactorValidationRequest request, IIdentityService identityService, HttpContext httpContext)
     {
         var result = await identityService.ValidateTwoFactorAsync(request, httpContext.RequestAborted);
 
@@ -99,7 +93,7 @@ public class AuthEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> VerifyEmailAsync(string secret, string token, IIdentityService identityService, HttpContext httpContext)
+    private static async Task<IResult> VerifyEmailAsync(string secret, string token, IIdentityService identityService, HttpContext httpContext)
     {
         var result = await identityService.VerifyEmailAsync(secret, token, httpContext.RequestAborted);
 

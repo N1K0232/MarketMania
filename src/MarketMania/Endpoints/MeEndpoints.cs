@@ -13,11 +13,10 @@ public class MeEndpoints : IEndpointRouteHandlerBuilder
 
         meApiGroup.MapGet(string.Empty, GetAsync)
             .Produces<User>()
-            .WithName("me")
-            .WithOpenApi();
+            .WithName("me");
     }
 
-    public static async Task<IResult> GetAsync(IMeService meService, HttpContext httpContext)
+    private static async Task<IResult> GetAsync(IMeService meService, HttpContext httpContext)
     {
         var result = await meService.GetAsync();
 

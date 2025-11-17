@@ -22,65 +22,56 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
             .RequireAuthorization("Admin")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("ConfirmProduct")
-            .WithOpenApi();
+            .WithName("ConfirmProduct");
 
         productsApiGroup.MapDelete("{id:guid}", DeleteAsync)
             .RequireAuthorization("Admin")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("DeleteProduct")
-            .WithOpenApi();
+            .WithName("DeleteProduct");
 
         productsApiGroup.MapGet("{id:guid}", GetAsync)
             .AllowAnonymous()
             .Produces<Product>()
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("GetProduct")
-            .WithOpenApi();
+            .WithName("GetProduct");
 
         productsApiGroup.MapGet(string.Empty, GetListAsync)
             .AllowAnonymous()
             .Produces<PaginatedList<Product>>()
-            .WithName("GetProducts")
-            .WithOpenApi();
+            .WithName("GetProducts");
 
         productsApiGroup.MapPost(string.Empty, InsertAsync)
             .RequireAuthorization("Admin")
             .WithValidation<SaveProductRequest>()
             .Produces<Product>(StatusCodes.Status201Created)
-            .WithName("InsertProduct")
-            .WithOpenApi();
+            .WithName("InsertProduct");
 
         productsApiGroup.MapPut("{id:guid}", UpdateAsync)
             .RequireAuthorization("Admin")
             .WithValidation<SaveProductRequest>()
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("UpdateProduct")
-            .WithOpenApi();
+            .WithName("UpdateProduct");
 
         productsApiGroup.MapDelete("{productId:guid}/images/{imageId:guid}", DeleteImageAsync)
             .RequireAuthorization("Admin")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("DeleteProductImage")
-            .WithOpenApi();
+            .WithName("DeleteProductImage");
 
         productsApiGroup.MapGet("{productId:guid}/images/{imageId:guid}", GetImageAsync)
             .AllowAnonymous()
             .Produces<Image>()
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("GetProductImage")
-            .WithOpenApi();
+            .WithName("GetProductImage");
 
         productsApiGroup.MapGet("{productId:guid}/images", GetImagesAsync)
             .AllowAnonymous()
             .Produces<PaginatedList<Image>>()
-            .WithName("GetProductImages")
-            .WithOpenApi();
+            .WithName("GetProductImages");
 
         productsApiGroup.MapGet("{productId:guid}/images/{imageId:guid}/stream", ReadStreamAsync)
             .AllowAnonymous()
@@ -88,8 +79,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
             .Produces(StatusCodes.Status200OK, contentType: MediaTypeNames.Image.Png)
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("ReadImageStream")
-            .WithOpenApi();
+            .WithName("ReadImageStream");
 
         productsApiGroup.MapPost("{productId:guid}/images", UploadImageAsync)
             .RequireAuthorization("Admin")
@@ -98,77 +88,67 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status409Conflict)
-            .WithName("UploadProductImage")
-            .WithOpenApi();
+            .WithName("UploadProductImage");
 
         productsApiGroup.MapDelete("{productId:guid}/ratings/{ratingId:guid}", DeleteRatingAsync)
             .AllowAnonymous()
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("DeleteProductRating")
-            .WithOpenApi();
+            .WithName("DeleteProductRating");
 
         productsApiGroup.MapGet("{productId:guid}/ratings/{ratingId:guid}", GetRatingAsync)
             .AllowAnonymous()
             .Produces<Rating>()
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("GetProductRating")
-            .WithOpenApi();
+            .WithName("GetProductRating");
 
         productsApiGroup.MapGet("{productId:guid}/ratings", GetRatingsAsync)
             .AllowAnonymous()
             .Produces<IEnumerable<Rating>>()
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("GetProductRatings")
-            .WithOpenApi();
+            .WithName("GetProductRatings");
 
         productsApiGroup.MapPost("{productId:guid}/ratings", PublishRatingAsync)
             .RequireAuthorization()
             .WithValidation<NewRatingRequest>()
             .Produces<Rating>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("PublishProductRating")
-            .WithOpenApi();
+            .WithName("PublishProductRating");
 
         productsApiGroup.MapDelete("{productId:guid}/specifications/{specificationId:guid}", DeleteSpecificationAsync)
             .RequireAuthorization("Admin")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("DeleteProductSpecification")
-            .WithOpenApi();
+            .WithName("DeleteProductSpecification");
 
         productsApiGroup.MapGet("{productId:guid}/specifications/{specificationId:guid}", GetSpecificationAsync)
             .AllowAnonymous()
             .Produces<Specification>()
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("GetProductSpecification")
-            .WithOpenApi();
+            .WithName("GetProductSpecification");
 
         productsApiGroup.MapGet("{productId:guid}/specifications", GetSpecificationsAsync)
             .AllowAnonymous()
             .Produces<IEnumerable<Specification>>()
-            .WithName("GetProductSpecifications")
-            .WithOpenApi();
+            .WithName("GetProductSpecifications");
 
         productsApiGroup.MapPost("{productId:guid}/specifications", InsertSpecificationAsync)
             .RequireAuthorization("Admin")
             .Produces<Specification>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status404NotFound)
             .WithValidation<SaveSpecificationRequest>()
-            .WithName("InsertProductSpecification")
-            .WithOpenApi();
+            .WithName("InsertProductSpecification");
 
         productsApiGroup.MapPut("{productId:guid}/specifications/{specificationId:guid}", UpdateSpecificationAsync)
             .RequireAuthorization("Admin")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
             .WithValidation<SaveSpecificationRequest>()
-            .WithName("UpdateProductSpecification")
-            .WithOpenApi();
+            .WithName("UpdateProductSpecification");
     }
 
-    public static async Task<IResult> ConfirmAsync(Guid id, IProductService productService, HttpContext httpContext)
+    private static async Task<IResult> ConfirmAsync(Guid id, IProductService productService, HttpContext httpContext)
     {
         var result = await productService.ConfirmAsync(id, httpContext.RequestAborted);
 
@@ -176,7 +156,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> DeleteAsync(Guid id, IProductService productService, HttpContext httpContext)
+    private static async Task<IResult> DeleteAsync(Guid id, IProductService productService, HttpContext httpContext)
     {
         var result = await productService.DeleteAsync(id, httpContext.RequestAborted);
 
@@ -184,7 +164,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetAsync(Guid id, IProductService productService, HttpContext httpContext)
+    private static async Task<IResult> GetAsync(Guid id, IProductService productService, HttpContext httpContext)
     {
         var result = await productService.GetAsync(id, httpContext.RequestAborted);
 
@@ -192,7 +172,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetListAsync(IProductService productService, HttpContext httpContext, string? searchText = null, int pageIndex = 0, int itemsPerPage = 50, string orderBy = "Name, Price")
+    private static async Task<IResult> GetListAsync(IProductService productService, HttpContext httpContext, string? searchText = null, int pageIndex = 0, int itemsPerPage = 50, string orderBy = "Name, Price")
     {
         var result = await productService.GetListAsync(searchText, pageIndex, itemsPerPage, orderBy, httpContext.RequestAborted);
 
@@ -200,7 +180,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> InsertAsync(SaveProductRequest request, IProductService productService, HttpContext httpContext)
+    private static async Task<IResult> InsertAsync(SaveProductRequest request, IProductService productService, HttpContext httpContext)
     {
         var result = await productService.InsertAsync(request, httpContext.RequestAborted);
 
@@ -208,7 +188,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> UpdateAsync(Guid id, SaveProductRequest request, IProductService productService, HttpContext httpContext)
+    private static async Task<IResult> UpdateAsync(Guid id, SaveProductRequest request, IProductService productService, HttpContext httpContext)
     {
         var result = await productService.UpdateAsync(id, request, httpContext.RequestAborted);
 
@@ -216,7 +196,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> DeleteImageAsync(Guid productId, Guid imageId, IImageService imageService, HttpContext httpContext)
+    private static async Task<IResult> DeleteImageAsync(Guid productId, Guid imageId, IImageService imageService, HttpContext httpContext)
     {
         var result = await imageService.DeleteAsync(productId, imageId, httpContext.RequestAborted);
 
@@ -224,7 +204,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetImageAsync(Guid productId, Guid imageId, IImageService imageService, HttpContext httpContext)
+    private static async Task<IResult> GetImageAsync(Guid productId, Guid imageId, IImageService imageService, HttpContext httpContext)
     {
         var result = await imageService.GetAsync(productId, imageId, httpContext.RequestAborted);
 
@@ -232,7 +212,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetImagesAsync(Guid productId, IImageService imageService, HttpContext httpContext)
+    private static async Task<IResult> GetImagesAsync(Guid productId, IImageService imageService, HttpContext httpContext)
     {
         var result = await imageService.GetListAsync(productId, httpContext.RequestAborted);
 
@@ -240,7 +220,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> ReadStreamAsync(Guid productId, Guid imageId, IImageService imageService, HttpContext httpContext)
+    private static async Task<IResult> ReadStreamAsync(Guid productId, Guid imageId, IImageService imageService, HttpContext httpContext)
     {
         var result = await imageService.ReadAsync(productId, imageId, httpContext.RequestAborted);
 
@@ -248,7 +228,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> UploadImageAsync(Guid productId, [Required][AllowedExtensions("*.jpg", "*.png")] IFormFile file, IImageService imageService, HttpContext httpContext)
+    private static async Task<IResult> UploadImageAsync(Guid productId, [Required][AllowedExtensions("*.jpg", "*.png")] IFormFile file, IImageService imageService, HttpContext httpContext)
     {
         var result = await imageService.UploadAsync(productId, file, httpContext.RequestAborted);
 
@@ -256,7 +236,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> DeleteRatingAsync(Guid productId, Guid ratingId, IRatingService ratingService, HttpContext httpContext)
+    private static async Task<IResult> DeleteRatingAsync(Guid productId, Guid ratingId, IRatingService ratingService, HttpContext httpContext)
     {
         var result = await ratingService.DeleteAsync(productId, ratingId, httpContext.RequestAborted);
 
@@ -264,7 +244,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetRatingAsync(Guid productId, Guid ratingId, IRatingService ratingService, HttpContext httpContext)
+    private static async Task<IResult> GetRatingAsync(Guid productId, Guid ratingId, IRatingService ratingService, HttpContext httpContext)
     {
         var result = await ratingService.GetAsync(productId, ratingId, httpContext.RequestAborted);
 
@@ -272,7 +252,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetRatingsAsync(Guid productId, IRatingService ratingService, HttpContext httpContext)
+    private static async Task<IResult> GetRatingsAsync(Guid productId, IRatingService ratingService, HttpContext httpContext)
     {
         var result = await ratingService.GetListAsync(productId, httpContext.RequestAborted);
 
@@ -280,7 +260,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> PublishRatingAsync(Guid productId, NewRatingRequest request, IRatingService ratingService, HttpContext httpContext)
+    private static async Task<IResult> PublishRatingAsync(Guid productId, NewRatingRequest request, IRatingService ratingService, HttpContext httpContext)
     {
         var result = await ratingService.PublishAsync(productId, request, httpContext.RequestAborted);
 
@@ -288,7 +268,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> DeleteSpecificationAsync(Guid productId, Guid specificationId, ISpecificationService specificationService, HttpContext httpContext)
+    private static async Task<IResult> DeleteSpecificationAsync(Guid productId, Guid specificationId, ISpecificationService specificationService, HttpContext httpContext)
     {
         var result = await specificationService.DeleteAsync(productId, specificationId, httpContext.RequestAborted);
 
@@ -296,7 +276,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetSpecificationAsync(Guid productId, Guid specificationId, ISpecificationService specificationService, HttpContext httpContext)
+    private static async Task<IResult> GetSpecificationAsync(Guid productId, Guid specificationId, ISpecificationService specificationService, HttpContext httpContext)
     {
         var result = await specificationService.GetAsync(productId, specificationId, httpContext.RequestAborted);
 
@@ -304,7 +284,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetSpecificationsAsync(Guid productId, string name, ISpecificationService specificationService, HttpContext httpContext)
+    private static async Task<IResult> GetSpecificationsAsync(Guid productId, string name, ISpecificationService specificationService, HttpContext httpContext)
     {
         var result = await specificationService.GetListAsync(productId, name, httpContext.RequestAborted);
 
@@ -312,7 +292,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> InsertSpecificationAsync(Guid productId, SaveSpecificationRequest request, ISpecificationService specificationService, HttpContext httpContext)
+    private static async Task<IResult> InsertSpecificationAsync(Guid productId, SaveSpecificationRequest request, ISpecificationService specificationService, HttpContext httpContext)
     {
         var result = await specificationService.InsertAsync(productId, request, httpContext.RequestAborted);
 
@@ -320,7 +300,7 @@ public class ProductEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> UpdateSpecificationAsync(Guid productId, Guid specificationId, SaveSpecificationRequest request, ISpecificationService specificationService, HttpContext httpContext)
+    private static async Task<IResult> UpdateSpecificationAsync(Guid productId, Guid specificationId, SaveSpecificationRequest request, ISpecificationService specificationService, HttpContext httpContext)
     {
         var result = await specificationService.UpdateAsync(productId, specificationId, request, httpContext.RequestAborted);
 

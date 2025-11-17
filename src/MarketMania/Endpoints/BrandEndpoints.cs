@@ -17,22 +17,19 @@ public class BrandEndpoints : IEndpointRouteHandlerBuilder
             .RequireAuthorization("Admin")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("DeleteBrand")
-            .WithOpenApi();
+            .WithName("DeleteBrand");
 
         brandsApiGroup.MapGet("{id:guid}", GetAsync)
             .AllowAnonymous()
             .Produces<Brand>()
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("GetBrand")
-            .WithOpenApi();
+            .WithName("GetBrand");
 
         brandsApiGroup.MapGet(string.Empty, GetListAsync)
             .AllowAnonymous()
             .Produces<IEnumerable<Category>>()
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("GetBrands")
-            .WithOpenApi();
+            .WithName("GetBrands");
 
         brandsApiGroup.MapPost(string.Empty, InsertAsync)
             .RequireAuthorization("Admin")
@@ -40,19 +37,17 @@ public class BrandEndpoints : IEndpointRouteHandlerBuilder
             .Produces<Category>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status409Conflict)
-            .WithName("InsertBrand")
-            .WithOpenApi();
+            .WithName("InsertBrand");
 
         brandsApiGroup.MapPut("{id:guid}", UpdateAsync)
             .RequireAuthorization("Admin")
             .WithValidation<SaveBrandRequest>()
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("UpdateBrand")
-            .WithOpenApi();
+            .WithName("UpdateBrand");
     }
 
-    public static async Task<IResult> DeleteAsync(Guid id, IBrandService brandService, HttpContext httpContext)
+    private static async Task<IResult> DeleteAsync(Guid id, IBrandService brandService, HttpContext httpContext)
     {
         var result = await brandService.DeleteAsync(id, httpContext.RequestAborted);
 
@@ -60,7 +55,7 @@ public class BrandEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetAsync(Guid id, IBrandService brandService, HttpContext httpContext)
+    private static async Task<IResult> GetAsync(Guid id, IBrandService brandService, HttpContext httpContext)
     {
         var result = await brandService.GetAsync(id, httpContext.RequestAborted);
 
@@ -68,7 +63,7 @@ public class BrandEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetListAsync(string? name, IBrandService brandService, HttpContext httpContext)
+    private static async Task<IResult> GetListAsync(string? name, IBrandService brandService, HttpContext httpContext)
     {
         var result = await brandService.GetListAsync(name, httpContext.RequestAborted);
 
@@ -76,7 +71,7 @@ public class BrandEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> InsertAsync(SaveBrandRequest request, IBrandService brandService, HttpContext httpContext)
+    private static async Task<IResult> InsertAsync(SaveBrandRequest request, IBrandService brandService, HttpContext httpContext)
     {
         var result = await brandService.InsertAsync(request, httpContext.RequestAborted);
 
@@ -84,7 +79,7 @@ public class BrandEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> UpdateAsync(Guid id, SaveBrandRequest request, IBrandService brandService, HttpContext httpContext)
+    private static async Task<IResult> UpdateAsync(Guid id, SaveBrandRequest request, IBrandService brandService, HttpContext httpContext)
     {
         var result = await brandService.UpdateAsync(id, request, httpContext.RequestAborted);
 

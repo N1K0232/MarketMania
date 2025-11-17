@@ -11,7 +11,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.0" />
-    <PackageReference Include="TinyHelpers.EntityFrameworkCore" Version="3.0.58" />
+    <PackageReference Include="TinyHelpers.EntityFrameworkCore" Version="3.0.60" />
   </ItemGroup>
 
   <ItemGroup>

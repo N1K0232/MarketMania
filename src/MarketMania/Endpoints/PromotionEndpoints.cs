@@ -17,22 +17,19 @@ public class PromotionEndpoints : IEndpointRouteHandlerBuilder
             .RequireAuthorization("Admin")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("DeletePromotion")
-            .WithOpenApi();
+            .WithName("DeletePromotion");
 
         promotionApiGroup.MapGet("{id:guid}", GetAsync)
             .AllowAnonymous()
             .Produces<Category>()
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("GetPromotion")
-            .WithOpenApi();
+            .WithName("GetPromotion");
 
         promotionApiGroup.MapGet(string.Empty, GetListAsync)
             .AllowAnonymous()
             .Produces<IEnumerable<Promotion>>()
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("GetPromotions")
-            .WithOpenApi();
+            .WithName("GetPromotions");
 
         promotionApiGroup.MapPost(string.Empty, InsertAsync)
             .RequireAuthorization("Admin")
@@ -40,19 +37,17 @@ public class PromotionEndpoints : IEndpointRouteHandlerBuilder
             .Produces<Promotion>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status409Conflict)
-            .WithName("InsertPromotion")
-            .WithOpenApi();
+            .WithName("InsertPromotion");
 
         promotionApiGroup.MapPut("{id:guid}", UpdateAsync)
             .RequireAuthorization("Admin")
             .WithValidation<SavePromotionRequest>()
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("UpdatePromotion")
-            .WithOpenApi();
+            .WithName("UpdatePromotion");
     }
 
-    public static async Task<IResult> DeleteAsync(Guid id, IPromotionService promotionService, HttpContext httpContext)
+    private static async Task<IResult> DeleteAsync(Guid id, IPromotionService promotionService, HttpContext httpContext)
     {
         var result = await promotionService.DeleteAsync(id, httpContext.RequestAborted);
 
@@ -60,7 +55,7 @@ public class PromotionEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetAsync(Guid id, IPromotionService promotionService, HttpContext httpContext)
+    private static async Task<IResult> GetAsync(Guid id, IPromotionService promotionService, HttpContext httpContext)
     {
         var result = await promotionService.GetAsync(id, httpContext.RequestAborted);
 
@@ -68,7 +63,7 @@ public class PromotionEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> GetListAsync(string? name, IPromotionService promotionService, HttpContext httpContext)
+    private static async Task<IResult> GetListAsync(string? name, IPromotionService promotionService, HttpContext httpContext)
     {
         var result = await promotionService.GetListAsync(name, httpContext.RequestAborted);
 
@@ -76,7 +71,7 @@ public class PromotionEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> InsertAsync(SavePromotionRequest request, IPromotionService promotionService, HttpContext httpContext)
+    private static async Task<IResult> InsertAsync(SavePromotionRequest request, IPromotionService promotionService, HttpContext httpContext)
     {
         var result = await promotionService.InsertAsync(request, httpContext.RequestAborted);
 
@@ -84,7 +79,7 @@ public class PromotionEndpoints : IEndpointRouteHandlerBuilder
         return response;
     }
 
-    public static async Task<IResult> UpdateAsync(Guid id, SavePromotionRequest request, IPromotionService promotionService, HttpContext httpContext)
+    private static async Task<IResult> UpdateAsync(Guid id, SavePromotionRequest request, IPromotionService promotionService, HttpContext httpContext)
     {
         var result = await promotionService.UpdateAsync(id, request, httpContext.RequestAborted);
 

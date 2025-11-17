@@ -1,19 +1,23 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Security.Claims;
+using System.Text;
+using MarketMania.Authentication;
 using MarketMania.Authentication.Entities;
-using MarketMania.Authentication.Generators.Interfaces;
+using MarketMania.BusinessLayer.Generators.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.JsonWebTokens;
 using SimpleAuthentication.JwtBearer;
 
-namespace MarketMania.Authentication.Generators;
+namespace MarketMania.BusinessLayer.Generators;
 
-public class TokenGenerator(UserManager<ApplicationUser> userManager, IJwtBearerService jwtBearerService) : ITokenGenerator
+public class JwtBearerTokenGenerator(UserManager<ApplicationUser> userManager, IJwtBearerService jwtBearerService) : IJwtBearerTokenGenerator
 {
     private const int RequestPerWindow = 5;
     private const int WindowMinutes = 1;
 
-    public async Task<string> GenerateAccessTokenAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+    public async Task<string> CreateTokenAsync(ApplicationUser user, CancellationToken cancellationToken = default)
     {
         await userManager.UpdateSecurityStampAsync(user).ConfigureAwait(false);
         var userRoles = await userManager.GetRolesAsync(user).ConfigureAwait(false);
@@ -31,7 +35,8 @@ public class TokenGenerator(UserManager<ApplicationUser> userManager, IJwtBearer
             new Claim(JwtRegisteredClaimNames.FamilyName, user.LastName ?? string.Empty),
             new Claim(ClaimTypes.SerialNumber, user.SecurityStamp!),
             new Claim(CustomClaimTypes.PermitLimit, RequestPerWindow.ToString()),
-            new Claim(CustomClaimTypes.Window, WindowMinutes.ToString())
+            new Claim(CustomClaimTypes.Window, WindowMinutes.ToString()),
+            new Claim(ClaimTypes.Dns, hostName)
         }
         .Union(userRoles.Select(role => new Claim(ClaimTypes.Role, role)))
         .Union(addresses.Select(address => new Claim(ClaimTypes.Dns, address.ToString())));
