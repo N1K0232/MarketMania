@@ -1,6 +1,3 @@
-using System.Net.Mime;
-using System.Security.Cryptography;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
@@ -21,12 +18,14 @@ using MarketMania.DataAccessLayer;
 using MarketMania.DataAccessLayer.Caching;
 using MarketMania.DataAccessLayer.Caching.Interfaces;
 using MarketMania.Extensions;
+using MarketMania.HealthChecks;
 using MarketMania.Requirements;
 using MarketMania.Security;
 using MarketMania.Services;
 using MarketMania.Startup;
 using MarketMania.StorageProviders.Extensions;
 using MarketMania.Swagger;
+using MarketMania.TimeZoneProvider;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -34,7 +33,6 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi;
 using MinimalHelpers.Routing;
 using MinimalHelpers.Validation;
@@ -69,9 +67,7 @@ builder.Services.AddDefaultExceptionHandler();
 builder.Services.AddDefaultProblemDetails();
 
 builder.Services.AddRequestTimeouts();
-
 builder.Services.AddTimeZoneProvider();
-builder.Services.AddScoped(_ => RandomNumberGenerator.Create());
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -359,34 +355,13 @@ app.MapEndpoints();
 app.MapHealthChecks("/healthz/live", new HealthCheckOptions
 {
     Predicate = _ => false,
-    ResponseWriter = HealthChecksResponseWriter()
+    ResponseWriter = HealthCheckHelper.HealthChecksResponseWriter()
 });
 
 app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
 {
     Predicate = healthCheck => healthCheck.Tags.Contains("ready"),
-    ResponseWriter = HealthChecksResponseWriter()
+    ResponseWriter = HealthCheckHelper.HealthChecksResponseWriter()
 });
 
 await app.RunAsync();
-
-static Func<HttpContext, HealthReport, Task> HealthChecksResponseWriter()
-    => async (context, report) =>
-    {
-        var result = JsonSerializer.Serialize(
-            new
-            {
-                status = report.Status.ToString(),
-                duration = report.TotalDuration.TotalMilliseconds,
-                details = report.Entries.Select(entry => new
-                {
-                    service = entry.Key,
-                    status = entry.Value.Status.ToString(),
-                    description = entry.Value.Description,
-                    exception = entry.Value.Exception?.Message,
-                })
-            });
-
-        context.Response.ContentType = MediaTypeNames.Application.Json;
-        await context.Response.WriteAsync(result);
-    };

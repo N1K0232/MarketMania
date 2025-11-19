@@ -24,5 +24,5 @@ public class AppSettings
 
     public string? StorageFolder { get; init; }
 
-    public string[] SupportedCultures { get; init; } = ["en-US", "it-IT"];
+    public string[] SupportedCultures { get; init; } = [];
 }

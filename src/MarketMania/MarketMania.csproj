@@ -38,6 +38,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MarketMania.Authentication\MarketMania.Authentication.csproj" />
     <ProjectReference Include="..\MarketMania.BusinessLayer\MarketMania.BusinessLayer.csproj" />
+    <ProjectReference Include="..\MarketMania.TimeZoneProvider\MarketMania.TimeZoneProvider.csproj" />
   </ItemGroup>
 
 </Project>
