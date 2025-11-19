@@ -1,4 +1,4 @@
-﻿namespace MarketMania.Contracts;
+﻿namespace MarketMania.TimeZoneProvider;
 
 public interface ITimeZoneService
 {

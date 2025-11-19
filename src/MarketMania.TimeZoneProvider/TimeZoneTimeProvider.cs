@@ -1,6 +1,4 @@
-﻿using MarketMania.Contracts;
-
-namespace MarketMania.BusinessLayer.Providers;
+﻿namespace MarketMania.TimeZoneProvider;
 
 public class TimeZoneTimeProvider(ITimeZoneService timeZoneService) : TimeProvider
 {

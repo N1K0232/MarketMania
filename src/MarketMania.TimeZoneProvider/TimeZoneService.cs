@@ -1,7 +1,6 @@
-﻿using MarketMania.Contracts;
-using TinyHelpers.Extensions;
+﻿using Microsoft.AspNetCore.Http;
 
-namespace MarketMania.Services;
+namespace MarketMania.TimeZoneProvider;
 
 public class TimeZoneService(IHttpContextAccessor httpContextAccessor) : ITimeZoneService
 {
@@ -10,7 +9,7 @@ public class TimeZoneService(IHttpContextAccessor httpContextAccessor) : ITimeZo
     public TimeZoneInfo? GetTimeZone()
     {
         var timeZoneId = GetTimeZoneHeaderValueCore();
-        if (timeZoneId.HasValue() && TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId, out var timeZoneInfo))
+        if (!string.IsNullOrWhiteSpace(timeZoneId) && TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId, out var timeZoneInfo))
         {
             return timeZoneInfo;
         }

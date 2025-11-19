@@ -7,7 +7,6 @@
     <File Path="README.md" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/MarketMania/MarketMania.csproj" />
     <Project Path="src/MarketMania.Authentication/MarketMania.Authentication.csproj" />
     <Project Path="src/MarketMania.BusinessLayer/MarketMania.BusinessLayer.csproj" />
     <Project Path="src/MarketMania.Clients/MarketMania.Clients.csproj" />
@@ -20,5 +19,7 @@
     <Project Path="src/MarketMania.Security/MarketMania.Security.csproj" />
     <Project Path="src/MarketMania.Shared/MarketMania.Shared.csproj" />
     <Project Path="src/MarketMania.StorageProviders/MarketMania.StorageProviders.csproj" />
+    <Project Path="src/MarketMania.TimeZoneProvider/MarketMania.TimeZoneProvider.csproj" Id="e2f224da-7bf0-4fe9-9a0d-889165862663" />
+    <Project Path="src/MarketMania/MarketMania.csproj" />
   </Folder>
 </Solution>
