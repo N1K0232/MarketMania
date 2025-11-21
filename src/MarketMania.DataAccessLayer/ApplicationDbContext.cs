@@ -12,13 +12,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public Task DeleteAsync<T>(T entity, CancellationToken cancellationToken = default) where T : BaseEntity
     {
         Set<T>().Remove(entity);
-        return SaveAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
     public Task DeleteAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : BaseEntity
     {
         Set<T>().RemoveRange(entities);
-        return SaveAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
     public async ValueTask<T?> GetAsync<T>(Guid id, CancellationToken cancellationToken = default) where T : BaseEntity
